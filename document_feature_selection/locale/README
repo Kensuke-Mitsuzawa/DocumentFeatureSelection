@@ -1,0 +1,12 @@
+Here are localization files.
+
+Translation files are located at document-feature-selection/locale/language_code/LC_MESSAGES/django.po
+
+There are several steps to follow to get valid translation strings:
+    - Create translation files by running django-admin.py makemessages -l fr_FR -d django
+        **from the document-feature-selection folder**.
+    - Create translation files for JavaScript by running django-admin.py makemessages -l fr_FR -d djangojs
+        **from the document-feature-selection folder**.
+    - Manually translate these files
+    - Compile messages by running django-admin.py compilemessages
+        **from the document-feature-selection folder**.

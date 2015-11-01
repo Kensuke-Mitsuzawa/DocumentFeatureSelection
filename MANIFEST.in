@@ -1,0 +1,3 @@
+recursive-include document-feature-selection *
+exclude .git .svn
+include LICENSE README.md
