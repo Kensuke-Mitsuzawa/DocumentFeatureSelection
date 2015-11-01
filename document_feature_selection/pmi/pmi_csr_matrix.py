@@ -6,6 +6,7 @@ from __future__ import division
 import logging
 from scipy.sparse import csr_matrix
 from collections import namedtuple
+from nltk.util import ngrams
 PosTuple = namedtuple('PosTuple', ('doc_id', 'word_id', 'document_frequency'))
 
 __author__ = 'kensuke-mi'
@@ -123,7 +124,23 @@ def make_csr_objects(row, col, data, n_feature, n_docs):
     return csr_matrix((data, (row, col)), shape=(n_docs, n_feature))
 
 
-def make_pmi_matrix(labeled_structure, logger):
+def ngram_data_conversion(labeled_structure, n):
+
+    character_joiner = lambda ngram_tuple: '_'.join(ngram_tuple)
+
+    new_documents = {}
+    for key in labeled_structure.keys():
+        docs = labeled_structure[key]
+        new_docs = []
+        for d in docs:
+            ngram_d = ngrams(d, n)
+            generated_ngrams = [character_joiner(g) for g in ngram_d]
+            new_docs.append(generated_ngrams)
+        new_documents[key] = new_docs
+    return new_documents
+
+
+def make_pmi_matrix(labeled_structure, logger, ngram=1):
     """This function makes document-frequency matrix for PMI calculation.
     Document-frequency matrix is scipy.csr_matrix.
 
@@ -150,12 +167,16 @@ def make_pmi_matrix(labeled_structure, logger):
     }
 
     -----------------------------------------------
-    :param labeled_structure:
-    :param logger:
+    :param labeled_structure above data structure:
+    :param logger logging.Logger:
+    :param ngram you can get score with ngram-words:
     :return (csr_matrix: scipy.csr_matrix, label_group_dict: dict, vocabulary: dict):
     """
     assert isinstance(logger, logging.Logger)
     __check_data_structure(labeled_structure)
+
+    if ngram > 1:
+        labeled_structure = ngram_data_conversion(labeled_structure, ngram)
 
     logging.debug(msg='Now pre-processing before CSR matrix')
     token_freq_document, label_group_dict, vocabulary = __data_convert(labeled_structure)

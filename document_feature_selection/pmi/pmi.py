@@ -61,7 +61,7 @@ def __conv_into_dict_format(pmi_word_score_items):
     return out_format_structure
 
 
-def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outformat='items'):
+def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outformat='items', cut_zero=False):
     """This function returns PMI score between label and words.
     Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
     [NOTE] This is not FREQUENCY.
@@ -80,6 +80,7 @@ def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outfor
     assert isinstance(pmi_csr_matrix, csr_matrix)
     assert isinstance(vocabulary, dict)
     assert isinstance(label_id, dict)
+    assert isinstance(cut_zero, bool)
 
     logging.debug(msg='Start calculating PMI')
     pmi_word_score_items = []
@@ -89,6 +90,9 @@ def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outfor
     logging.debug(msg='End calculating PMI')
 
     pmi_word_score_items.sort(key=lambda x: x['score'], reverse=True)
+    if cut_zero==True:
+        pmi_word_score_items = [item for item in pmi_word_score_items if item['score'] > 0]
+
     if outformat=='dict':
         out_format_structure = __conv_into_dict_format(pmi_word_score_items)
     else:

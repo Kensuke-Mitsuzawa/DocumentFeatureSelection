@@ -40,6 +40,17 @@ def test_make_csr_main():
     assert isinstance(vocabulary, dict)
 
 
+    pmi_document_freq_csr_matrix, label_group_dict, vocabulary = make_pmi_matrix(input_dict, logger, ngram=2)
+    assert isinstance(pmi_document_freq_csr_matrix, csr_matrix)
+    assert isinstance(label_group_dict, dict)
+    assert isinstance(vocabulary, dict)
+
 def test_pmi_calc():
-    pmi_document_freq_csr_matrix, label_group_dict, vocabulary = make_pmi_matrix(input_dict, logger)
-    pmi_single_process_main(pmi_document_freq_csr_matrix, vocabulary, label_group_dict)
+    pmi_document_freq_csr_matrix, label_group_dict, vocabulary = make_pmi_matrix(input_dict, logger, ngram=2)
+    pmi_score_objects = pmi_single_process_main(pmi_document_freq_csr_matrix, vocabulary, label_group_dict, logger, cut_zero=True)
+    assert isinstance(pmi_score_objects, list)
+    assert isinstance(pmi_score_objects[0], dict)
+    assert pmi_score_objects[0].has_key('score')
+    assert pmi_score_objects[0].has_key('word')
+    assert pmi_score_objects[0].has_key('label')
+    print(pmi_score_objects)
