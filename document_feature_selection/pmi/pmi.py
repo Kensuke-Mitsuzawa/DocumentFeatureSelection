@@ -36,6 +36,15 @@ def PMI(pmi_csr_matrix, word_index, label_index, label_indexes, feature_indexes)
 
 
 def label_word_PMI(pmi_csr_matrix, vocabulary, label_id, word, label):
+    """Calculate PMI score for pmi_single_process_main()
+
+    :param pmi_csr_matrix:
+    :param vocabulary:
+    :param label_id:
+    :param word:
+    :param label:
+    :return:
+    """
     assert isinstance(pmi_csr_matrix, csr_matrix)
     assert isinstance(vocabulary, dict)
     assert isinstance(label_id, dict)
@@ -51,6 +60,31 @@ def label_word_PMI(pmi_csr_matrix, vocabulary, label_id, word, label):
     return {'word': word, 'label': label, 'score': pmi_score}
 
 
+def docId_word_PMI(pmi_csr_matrix, vocabulary, label_id, word, label):
+    """Calculate PMI score for fit_format()
+
+    :param pmi_csr_matrix:
+    :param vocabulary:
+    :param label_id:
+    :param word:
+    :param label:
+    :return:
+    """
+    assert isinstance(pmi_csr_matrix, csr_matrix)
+    assert isinstance(vocabulary, dict)
+    assert isinstance(label_id, dict)
+    assert isinstance(word, (str, unicode))
+    assert isinstance(label, (str, unicode))
+
+    word_index = vocabulary[word]
+    label_index = label_id[label]
+    label_indexes = [i for i in range(0, pmi_csr_matrix.shape[0])]
+    feature_indexes = [i for i in range(0, pmi_csr_matrix.shape[1])]
+
+    pmi_score = PMI(pmi_csr_matrix, word_index, label_index, label_indexes, feature_indexes)
+    return label_index, word_index, pmi_score
+
+
 def __conv_into_dict_format(pmi_word_score_items):
     out_format_structure = {}
     for item in pmi_word_score_items:
@@ -63,17 +97,21 @@ def __conv_into_dict_format(pmi_word_score_items):
 
 def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outformat='items', cut_zero=False):
     """This function returns PMI score between label and words.
+
     Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
     [NOTE] This is not FREQUENCY.
+
     Ex.
     If 'iPhone' appears in 5 documents of 'IT' category document set, value must be 5.
+
     Even if 'iPhone' appears 10 time in 'IT' category document set, it does not matter.
-    -----------------------------------------------
-    :param pmi_csr_matrix document-frequency of input data:
-    :param vocabulary vocabulary set dict of input data:
-    :param label_id document id dict of input data:
-    :param logger logging.Logger:
-    :param outformat you can choose 'items' or 'dict':
+
+
+    :param scipy.csr_matrix:pmi_csr_matrix document-frequency of input data
+    :param dict vocabulary: vocabulary set dict of input data
+    :param dict label_id: document id dict of input data
+    :param logging.Logger logger:
+    :param str outformat: you can choose 'items' or 'dict':
     :return:
     """
     assert isinstance(logger, logging.Logger)
@@ -83,10 +121,11 @@ def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outfor
     assert isinstance(cut_zero, bool)
 
     logging.debug(msg='Start calculating PMI')
-    pmi_word_score_items = []
-    for v in vocabulary.keys():
-        for l in label_id.keys():
-            pmi_word_score_items.append(label_word_PMI(pmi_csr_matrix, vocabulary, label_id, v, l))
+    pmi_word_score_items = [
+        label_word_PMI(pmi_csr_matrix, vocabulary, label_id, v, l)
+        for v in vocabulary.keys() for l in label_id.keys()
+    ]
+
     logging.debug(msg='End calculating PMI')
 
     pmi_word_score_items.sort(key=lambda x: x['score'], reverse=True)
@@ -100,3 +139,24 @@ def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outfor
 
 
     return out_format_structure
+
+
+def fit_format(term_document_csr_matrix, vocabulary, label_id):
+    assert isinstance(term_document_csr_matrix, csr_matrix)
+
+    logging.debug(msg='Start calculating PMI')
+
+    pmi_score_csr_source = [
+        docId_word_PMI(term_document_csr_matrix, vocabulary, label_id, v, l)
+        for v in vocabulary.keys() for l in label_id.keys()]
+
+    row_list = [t[0] for t in pmi_score_csr_source]
+    col_list = [t[1] for t in pmi_score_csr_source]
+    data_list = [t[2] for t in pmi_score_csr_source]
+
+    pmi_featured_csr_matrix = csr_matrix((data_list, (row_list, col_list)),
+                                         shape=(term_document_csr_matrix.shape[0], term_document_csr_matrix.shape[1]))
+
+    logging.debug(msg='End calculating PMI')
+
+    return pmi_featured_csr_matrix

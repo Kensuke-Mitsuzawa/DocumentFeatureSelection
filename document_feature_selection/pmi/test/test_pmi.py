@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from document_feature_selection.pmi.pmi_csr_matrix import make_pmi_matrix
 from document_feature_selection.pmi.pmi import pmi_single_process_main
+from document_feature_selection.pmi.pmi import fit_format
 from scipy.sparse import csr_matrix
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -45,6 +46,7 @@ def test_make_csr_main():
     assert isinstance(label_group_dict, dict)
     assert isinstance(vocabulary, dict)
 
+
 def test_pmi_calc():
     pmi_document_freq_csr_matrix, label_group_dict, vocabulary = make_pmi_matrix(input_dict, logger, ngram=2)
     pmi_score_objects = pmi_single_process_main(pmi_document_freq_csr_matrix, vocabulary, label_group_dict, logger, cut_zero=True)
@@ -54,3 +56,10 @@ def test_pmi_calc():
     assert pmi_score_objects[0].has_key('word')
     assert pmi_score_objects[0].has_key('label')
     print(pmi_score_objects)
+
+
+def test_fit_transform_pmi():
+    pmi_document_freq_csr_matrix, label_group_dict, vocabulary = make_pmi_matrix(input_dict, logger, ngram=2)
+    pmi_featured_csr_matrix = fit_format(pmi_document_freq_csr_matrix, vocabulary, label_group_dict)
+    assert isinstance(pmi_featured_csr_matrix, csr_matrix)
+    print(pmi_featured_csr_matrix.toarray())

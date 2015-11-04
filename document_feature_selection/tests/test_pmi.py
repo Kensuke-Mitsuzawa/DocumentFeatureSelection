@@ -16,6 +16,8 @@ class TestPMI(unittest.TestCase):
     def test_pmi_calc(self):
         test_pmi_calc()
 
+    def test_fit_transform(self):
+        test_fit_transform_pmi()
 
 if __name__ == '__main__':
     unittest.main()
