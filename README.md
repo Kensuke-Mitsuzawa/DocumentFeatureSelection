@@ -7,7 +7,9 @@ This is set of feature extraction codes from text data.
 
 You can use some extraction methods, like PMI.
 
-I checked to move only under python2.7
+Basically, you can use these methods like scikit-learn way.
+
+I checked to work only under python2.7
 
 
 # Setting up
@@ -23,3 +25,6 @@ After that
 `python setup.py install`
 
 
+# Examples
+
+See scripts in `examples/`

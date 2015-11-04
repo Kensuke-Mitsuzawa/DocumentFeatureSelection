@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 __author__ = 'kensuke-mi'
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 if __name__ == '__main__':
