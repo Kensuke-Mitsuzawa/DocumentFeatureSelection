@@ -22,6 +22,8 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.eggs/
+
 
 # Standard IDEs
 .idea/

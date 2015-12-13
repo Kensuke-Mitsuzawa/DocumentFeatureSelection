@@ -6,7 +6,9 @@ import codecs
 import os.path
 import re
 import sys
+import install_dependencies
 from setuptools import setup, find_packages
+
 
 # avoid a from document-feature-selection import __version__ as version (that compiles document-feature-selection.__init__ and is not compatible with bdist_deb)
 version = None
