@@ -4,15 +4,14 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from logging import Logger
-from .pmi import pmi_single_process_main
-from .pmi_csr_matrix import make_pmi_matrix
-from . import pmi
-from ..common import utils
+from ..pmi import pmi_single_process_main
+from ..pmi.pmi_csr_matrix import make_pmi_matrix
+from . import tf_idf
 __author__ = 'kensuke-mi'
-__all__ = ['get_pmi_score']
 
 
-class PMI(object):
+
+class TFIDF(object):
     """This class generates PMI featured matrix.
 
     Example:
@@ -35,27 +34,21 @@ class PMI(object):
                 ["aa", "xx", "cc"],
             ]
             }
-        >>> pmi_obj = PMI(ngram=1, logger)
-        >>> pmi_featured_matrix = pmi_obj.fit_transform(input_format)
-
-        You can get PMI featured result with dict like format. This format makes you easy to observe features.
-
-        You must call ```fit_transform()``` method before calling get_pmi_feature_dictionary()
-
-
-        >>> pmi_score_objects = pmi_obj.get_pmi_feature_dictionary()
 
 
     :param int ngram: n parameter to generate n-gram from given dataset
     :param logging.Logger logger:
     """
-    def __init__(self, logger, ngram=1):
+    def __init__(self, logger, ngram=1, norm_metric='l2', use_idf_bool=True, smooth_idf_bool=True, sublinear_tf_bool=False):
         assert isinstance(ngram, int)
         assert isinstance(logger, Logger)
         self.n_gram = ngram
         self.logger = logger
-        self.transformer = pmi.fit_format
-
+        self.transformer = tf_idf.fit_transform
+        self.norm_metric = norm_metric
+        self.use_idf_bool = use_idf_bool
+        self.smooth_idf_bool = smooth_idf_bool
+        self.sublinear_tf_bool = sublinear_tf_bool
 
     def fit_transform(self, labeled_structure):
 
@@ -65,18 +58,18 @@ class PMI(object):
         self.label_group_dict = label_group_dict
         self.vocabulary = vocabulary
 
-        pmi_featured_csr_matrix = self.pmi_featured_matrix = self.transformer(
-            term_document_csr_matrix=self.feature_matrix,
-            vocabulary=self.vocabulary,
-            label_id=self.label_group_dict
+        tf_idf_matrix = self.transformer(
+            csr_matrix=csr_matrix,
+            norm=self.norm_metric,
+            use_idf=self.use_idf_bool,
+            smooth_idf=self.smooth_idf_bool,
+            sublinear_tf=self.sublinear_tf_bool
         )
-        self.weighted_matrix = pmi_featured_csr_matrix
+        self.weighed_matrix = tf_idf_matrix
 
-        return pmi_featured_csr_matrix
+        return tf_idf_matrix
 
-
-
-    def get_pmi_feature_dictionary(self, outformat='items', sort_desc=True):
+    def get_feature_dictionary(self, outformat='items', cut_zero=False, n_job=1):
         """Get dictionary structure of PMI featured scores.
 
         You can choose 'dict' or 'items' for ```outformat``` parameter.
@@ -104,15 +97,11 @@ class PMI(object):
         if not hasattr(self, "feature_matrix") or not hasattr(self, "label_group_dict") or not hasattr(self, "vocabulary"):
             raise AttributeError("You need to call 'fit_transform()' method before calling this method.")
 
-        pmi_score_objects = utils.get_feature_dictionary(
-            weighted_matrix=self.weighted_matrix,
-            vocabulary=self.vocabulary,
-            label_group_dict=self.label_group_dict,
-            logger=self.logger,
-            outformat=outformat
-        )
-
-        if sort_desc: pmi_score_objects = sorted(pmi_score_objects, key=lambda x: x['score'], reverse=True)
-
+        pmi_score_objects = pmi_single_process_main(self.feature_matrix,
+                                                    self.vocabulary,
+                                                    self.label_group_dict,
+                                                    self.logger,
+                                                    outformat=outformat,
+                                                    cut_zero=cut_zero)
 
         return pmi_score_objects

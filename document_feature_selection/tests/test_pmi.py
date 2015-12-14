@@ -13,11 +13,12 @@ class TestPMI(unittest.TestCase):
     def test_pmi_main(self):
         test_make_csr_main()
 
-    def test_pmi_calc(self):
-        test_pmi_calc()
-
     def test_fit_transform(self):
         test_fit_transform_pmi()
+
+    def test_class_get_score_objects(self):
+        test_class_get_score_objects()
+
 
 if __name__ == '__main__':
     unittest.main()
