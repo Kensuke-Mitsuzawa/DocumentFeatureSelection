@@ -288,8 +288,18 @@ def convert_data(labeled_structure, ngram=1, n_jobs=1):
 # -------------------------------------------------------------------------------------------------------------------
 # function for output
 
+def __conv_into_dict_format(word_score_items):
+    out_format_structure = {}
+    for item in word_score_items:
+        if item['label'] not in out_format_structure :
+            out_format_structure[item['label']] = [{'word': item['word'], 'score': item['score']}]
+        else:
+            out_format_structure[item['label']].append({'word': item['word'], 'score': item['score']})
+    return out_format_structure
 
-def get_pmi_feature_dictionary(self, outformat='items', sort_desc=True):
+
+def get_weight_feature_dictionary(scored_matrix, label_id_dict, feature_id_dict, outformat='items',
+                                  sort_desc=True, n_jobs=1):
     """Get dictionary structure of PMI featured scores.
 
     You can choose 'dict' or 'items' for ```outformat``` parameter.
@@ -310,22 +320,24 @@ def get_pmi_feature_dictionary(self, outformat='items', sort_desc=True):
         }
         ]
 
-
-    :param string outformat: format type of output dictionary. You can choose 'items' or 'dict'
-    :param bool cut_zero: return all result or not. If cut_zero = True, the method cuts zero features.
     """
-    if not hasattr(self, "feature_matrix") or not hasattr(self, "label_group_dict") or not hasattr(self, "vocabulary"):
-        raise AttributeError("You need to call 'fit_transform()' method before calling this method.")
 
-    pmi_score_objects = utils.get_feature_dictionary(
-        weighted_matrix=self.weighted_matrix,
-        vocabulary=self.vocabulary,
-        label_group_dict=self.label_group_dict,
-        logger=self.logger,
-        outformat=outformat
+    scored_objects = utils.get_feature_dictionary(
+        weighted_matrix=scored_matrix,
+        vocabulary=feature_id_dict,
+        label_group_dict=label_id_dict,
+        logger=logger,
+        n_jobs=n_jobs
     )
 
-    if sort_desc: pmi_score_objects = sorted(pmi_score_objects, key=lambda x: x['score'], reverse=True)
+    if sort_desc: scored_objects = \
+        sorted(scored_objects, key=lambda x: x['score'], reverse=True)
 
+    if outformat=='dict':
+        out_format_structure = __conv_into_dict_format(scored_objects)
+    elif outformat=='items':
+        out_format_structure = scored_objects
+    else:
+        raise ValueError('outformat must be either of {dict, items}')
 
-    return pmi_score_objects
+    return out_format_structure

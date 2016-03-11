@@ -4,9 +4,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from scipy.sparse import csr_matrix
+from logging import getLogger, StreamHandler
 import logging
 import joblib
 import math
+
+logging.basicConfig(format='%(asctime)s %(message)s',
+                    datefmt='%m/%d/%Y %I:%M:%S %p',
+                    level=logging.DEBUG)
+logger = getLogger(__name__)
+handler = StreamHandler()
+logger.addHandler(handler)
 
 __author__ = 'kensuke-mi'
 
@@ -18,23 +26,24 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, vocabulary, label_id, y=None, n_jobs=1):
+    def fit_transform(self, X, y=None, n_jobs=1):
         assert isinstance(X, csr_matrix)
-        assert isinstance(vocabulary, dict)
-        assert isinstance(label_id, dict)
 
-        logging.debug(msg='Start calculating PMI')
+        matrix_size = X.shape
+        sample_range = list(range(0, matrix_size[0]-1))
+        feature_range = list(range(0, matrix_size[1]-1))
 
-        # TODO joblibで並列プロセス化
+        logger.debug(msg='Start calculating PMI with n(process)={}'.format(n_jobs))
+        logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
+
         pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs)(
-            joblib.delayed(self.docId_word_PMI)
-            (
-                X,
-                word_index,
-                label_index
+            joblib.delayed(self.docId_word_PMI)(
+                X=X,
+                feature_index=feature_index,
+                sample_index=sample_index
             )
-            for v, word_index in vocabulary.items()
-            for l, label_index in label_id.items()
+            for sample_index in sample_range
+            for feature_index in feature_range
         )
 
         row_list = [t[0] for t in pmi_score_csr_source]
@@ -49,7 +58,7 @@ class PMI(object):
 
         return pmi_featured_csr_matrix
 
-    def docId_word_PMI(self, X, word_index, label_index):
+    def docId_word_PMI(self, X, feature_index, sample_index):
         """Calculate PMI score for fit_format()
 
         :param X:
@@ -60,26 +69,35 @@ class PMI(object):
         :return:
         """
         assert isinstance(X, csr_matrix)
-        assert isinstance(word_index, list)
-        assert isinstance(label_index, list)
+        assert isinstance(feature_index, int)
+        assert isinstance(sample_index, int)
 
-        label_indexes = [i for i in range(0, X.shape[0])]
-        feature_indexes = [i for i in range(0, X.shape[1])]
+        pmi_score = self.pmi(
+            X=X,
+            feature_index=feature_index,
+            sample_index=sample_index
+        )
+        return sample_index, feature_index, pmi_score
 
-        pmi_score = self.pmi(X, word_index, label_index, label_indexes, feature_indexes)
-        return label_index, word_index, pmi_score
+    def pmi(self, X, feature_index, sample_index):
+        """get PMI score for given feature & sample index
 
-    def pmi(self, X, word_index, label_index, label_indexes, feature_indexes):
+        :param X:
+        :param feature_index:
+        :param sample_index:
+        :return:
+        """
         assert isinstance(X, csr_matrix)
-        assert isinstance(word_index, int)
-        assert isinstance(label_index, int)
+        assert isinstance(feature_index, int)
+        assert isinstance(sample_index, int)
 
-        label_indexes.pop(label_index)
-        feature_indexes.pop(word_index)
+        matrix_size = X.shape
+        sample_indexes = [i for i in range(0, matrix_size[0] - 1) if i != sample_index]
+        feature_indexes = [i for i in range(0, matrix_size[1] - 1) if i != feature_index]
 
-        n_01 = X[label_index, feature_indexes].sum()
-        n_11 = X[label_index, word_index].sum()
-        n_10 = X[label_indexes, word_index].sum()
+        n_01 = X[sample_index, feature_indexes].sum()
+        n_11 = X[sample_index, feature_index].sum()
+        n_10 = X[sample_indexes, feature_index].sum()
         n_00 = X.sum() - n_01 - n_11 - n_10
         N = X.sum()
 
@@ -92,132 +110,3 @@ class PMI(object):
             temp4 = n_00/N * math.log((N*n_00)/((n_00+n_01)*(n_00+n_10)), 2)
             score = temp1 + temp2 + temp3 + temp4
             return score
-
-
-def label_word_PMI(pmi_csr_matrix, vocabulary, label_id, word, label):
-    """Calculate PMI score for pmi_single_process_main()
-
-    :param pmi_csr_matrix:
-    :param vocabulary:
-    :param label_id:
-    :param word:
-    :param label:
-    :return:
-    """
-    assert isinstance(pmi_csr_matrix, csr_matrix)
-    assert isinstance(vocabulary, dict)
-    assert isinstance(label_id, dict)
-    assert isinstance(word, (str, unicode))
-    assert isinstance(label, (str, unicode))
-
-    word_index = vocabulary[word]
-    label_index = label_id[label]
-    label_indexes = [i for i in range(0, pmi_csr_matrix.shape[0])]
-    feature_indexes = [i for i in range(0, pmi_csr_matrix.shape[1])]
-
-    pmi_score = PMI(pmi_csr_matrix, word_index, label_index, label_indexes, feature_indexes)
-    return {'word': word, 'label': label, 'score': pmi_score}
-
-
-def docId_word_PMI(pmi_csr_matrix, vocabulary, label_id, word, label):
-    """Calculate PMI score for fit_format()
-
-    :param pmi_csr_matrix:
-    :param vocabulary:
-    :param label_id:
-    :param word:
-    :param label:
-    :return:
-    """
-    assert isinstance(pmi_csr_matrix, csr_matrix)
-    assert isinstance(vocabulary, dict)
-    assert isinstance(label_id, dict)
-    assert isinstance(word, (str, unicode))
-    assert isinstance(label, (str, unicode))
-
-    word_index = vocabulary[word]
-    label_index = label_id[label]
-    label_indexes = [i for i in range(0, pmi_csr_matrix.shape[0])]
-    feature_indexes = [i for i in range(0, pmi_csr_matrix.shape[1])]
-
-    pmi_score = PMI(pmi_csr_matrix, word_index, label_index, label_indexes, feature_indexes)
-    return label_index, word_index, pmi_score
-
-
-def __conv_into_dict_format(pmi_word_score_items):
-    out_format_structure = {}
-    for item in pmi_word_score_items:
-        if out_format_structure not in item['label']:
-            out_format_structure[item['label']] = [{'word': item['word'], 'score': item['score']}]
-        else:
-            out_format_structure[item['label']].append({'word': item['word'], 'score': item['score']})
-    return out_format_structure
-
-
-def pmi_single_process_main(pmi_csr_matrix, vocabulary, label_id, logger, outformat='items', cut_zero=False):
-    """This function returns PMI score between label and words.
-
-    Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
-    [NOTE] This is not FREQUENCY.
-
-    Ex.
-    If 'iPhone' appears in 5 documents of 'IT' category document set, value must be 5.
-
-    Even if 'iPhone' appears 10 time in 'IT' category document set, it does not matter.
-
-
-    :param scipy.csr_matrix:pmi_csr_matrix document-frequency of input data
-    :param dict vocabulary: vocabulary set dict of input data
-    :param dict label_id: document id dict of input data
-    :param logging.Logger logger:
-    :param str outformat: you can choose 'items' or 'dict':
-    :return:
-    """
-    assert isinstance(logger, logging.Logger)
-    assert isinstance(pmi_csr_matrix, csr_matrix)
-    assert isinstance(vocabulary, dict)
-    assert isinstance(label_id, dict)
-    assert isinstance(cut_zero, bool)
-
-    logging.debug(msg='Start calculating PMI')
-    pmi_word_score_items = [
-        label_word_PMI(pmi_csr_matrix, vocabulary, label_id, v, l)
-        for v in vocabulary.keys() for l in label_id.keys()
-    ]
-
-    logging.debug(msg='End calculating PMI')
-
-    pmi_word_score_items.sort(key=lambda x: x['score'], reverse=True)
-    if cut_zero==True:
-        pmi_word_score_items = [item for item in pmi_word_score_items if item['score'] > 0]
-
-    if outformat=='dict':
-        out_format_structure = __conv_into_dict_format(pmi_word_score_items)
-    else:
-        out_format_structure = pmi_word_score_items
-
-
-    return out_format_structure
-
-
-def fit_format(term_document_csr_matrix, vocabulary, label_id):
-    assert isinstance(term_document_csr_matrix, csr_matrix)
-
-    logging.debug(msg='Start calculating PMI')
-
-    # TODO joblibで並列プロセス化
-    pmi_score_csr_source = [
-        docId_word_PMI(term_document_csr_matrix, vocabulary, label_id, v, l)
-        for v in vocabulary.keys() for l in label_id.keys()
-        ]
-
-    row_list = [t[0] for t in pmi_score_csr_source]
-    col_list = [t[1] for t in pmi_score_csr_source]
-    data_list = [t[2] for t in pmi_score_csr_source]
-
-    pmi_featured_csr_matrix = csr_matrix((data_list, (row_list, col_list)),
-                                         shape=(term_document_csr_matrix.shape[0], term_document_csr_matrix.shape[1]))
-
-    logging.debug(msg='End calculating PMI')
-
-    return pmi_featured_csr_matrix

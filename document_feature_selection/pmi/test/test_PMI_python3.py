@@ -1,5 +1,7 @@
 import unittest
+from document_feature_selection.common import data_converter_python3
 from document_feature_selection.pmi import PMI_python3
+from scipy.sparse import csr_matrix
 
 
 class TestPmiPython3(unittest.TestCase):
@@ -23,7 +25,25 @@ class TestPmiPython3(unittest.TestCase):
                 ["aa", "xx", "cc"],
             ]
         }
+        self.csr_matrix, self.label_id, self.vocab_id = data_converter_python3.convert_data(input_dict,
+                                                                                            ngram=1, n_jobs=5)
+
+    def test_normal_fit_transform(self):
+        pmi_object = PMI_python3.PMI()
+        scored_matrix = pmi_object.fit_transform(
+            X=self.csr_matrix,
+            n_jobs=1
+        )
+        assert isinstance(scored_matrix, csr_matrix)
+
+    def test_multi_process_fit_transform(self):
+        pmi_object = PMI_python3.PMI()
+        scored_matrix = pmi_object.fit_transform(
+            X=self.csr_matrix,
+            n_jobs=5
+        )
+        assert isinstance(scored_matrix, csr_matrix)
 
 
-    def test_fit_transform(self):
-        pass
+if __name__ == '__main__':
+    unittest.main()
