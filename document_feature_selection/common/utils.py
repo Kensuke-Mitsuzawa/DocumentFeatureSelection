@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
+from collections import Iterable
 from scipy.sparse.csr import csr_matrix
 from numpy import ndarray
 import logging
@@ -11,6 +12,16 @@ import collections
 __author__ = 'kensuke-mi'
 
 ROW_COL_VAL = collections.namedtuple('ROW_COL_VAL', 'row col val')
+
+
+def flatten(lis):
+     for item in lis:
+         if isinstance(item, Iterable) and not isinstance(item, str):
+             for x in flatten(item):
+                 yield x
+         else:
+             yield item
+
 
 def __conv_into_dict_format(pmi_word_score_items):
     out_format_structure = {}
@@ -71,6 +82,7 @@ def get_word(row_col_val_tuple, vocabulary):
     assert isinstance(vocabulary, dict)
 
     return vocabulary[row_col_val_tuple.col]
+
 
 def feature_extraction_single(weight_csr_matrix, vocabulary, label_id, logger, outformat='items'):
     """This function returns PMI score between label and words.
@@ -159,3 +171,5 @@ def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, logger
         raise Exception('not implemented yet')
 
     return score_objects
+
+
