@@ -2,6 +2,7 @@ from document_feature_selection.common import data_converter_python3
 from document_feature_selection.pmi import PMI_python3
 from scipy.sparse import csr_matrix
 import unittest
+import numpy
 import logging
 
 
@@ -42,6 +43,21 @@ class TestDataConverter(unittest.TestCase):
         assert isinstance(csr_matrix_, csr_matrix)
         assert isinstance(label_group_dict, dict)
         assert isinstance(vocabulary, dict)
+
+        n_correct_sample = 3
+        n_correct_featute = 8
+
+        assert csr_matrix_.shape[0] == n_correct_sample
+        assert csr_matrix_.shape[1] == n_correct_featute
+
+        correct_array_numpy = numpy.array(
+            [[1, 2, 0, 3, 1, 0, 1, 1],
+             [2, 0, 0, 0, 0, 1, 1, 4],
+             [0, 0, 2, 1, 0, 4, 0, 1]
+         ])
+        # TODO 比較を実行する
+        assert correct_array_numpy
+
 
     def test_multi_process_convert_data(self):
         """checks if it works or not when n_process is more than 1
