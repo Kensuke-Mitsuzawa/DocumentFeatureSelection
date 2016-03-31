@@ -22,6 +22,10 @@ with codecs.open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding=
 
 entry_points = {u'console_scripts': [u'document_feature_selection = document_feature_selection.cli:main']}
 
+
+install_requires = ['six', 'setuptools>=1.0',
+                    'nltk==3.0.1', 'scikit-learn==0.15.2', 'scipy==0.14.0', 'numpy==1.9.3']
+
 setup(
     name='document-feature-selection',
     version=version,
@@ -36,7 +40,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     test_suite='document-feature-selection.tests',
-    install_requires=['six', 'setuptools>=1.0'],
+    install_requires=install_requires,
     setup_requires=['six', 'setuptools>=1.0'],
     classifiers=[],
 )
