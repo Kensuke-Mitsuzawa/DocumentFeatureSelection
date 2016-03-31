@@ -24,7 +24,7 @@ entry_points = {u'console_scripts': [u'document_feature_selection = document_fea
 
 
 install_requires = ['six', 'setuptools>=1.0',
-                    'nltk==3.0.1', 'scikit-learn==0.15.2', 'scipy==0.14.0', 'numpy==1.9.3']
+                    'nltk==3.0.1', 'scikit-learn==0.15.2', 'scipy', 'numpy']
 
 setup(
     name='document-feature-selection',
