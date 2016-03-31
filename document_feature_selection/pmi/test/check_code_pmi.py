@@ -92,5 +92,13 @@ if __name__ == '__main__':
         ['label_c', "xx", "xx", "cc"],
         ['label_c', "aa", "xx", "cc"],
     ]
-    res = mutual_information(target='label_a', data=input_data)
-    print(res)
+    res = mutual_information(target='label_a', data=input_data, k=30)
+    import pprint
+    print('label_a')
+    pprint.pprint(res)
+
+    print('label_b')
+    pprint.pprint(mutual_information(target='label_b', data=input_data, k=30))
+
+    print('label_c')
+    pprint.pprint(mutual_information(target='label_c', data=input_data, k=30))

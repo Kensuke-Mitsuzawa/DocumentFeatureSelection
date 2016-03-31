@@ -25,14 +25,17 @@ class TestPmiPython3(unittest.TestCase):
                 ["aa", "xx", "cc"],
             ]
         }
-        self.csr_matrix, self.label_id, self.vocab_id = data_converter_python3.convert_data(input_dict,
-                                                                                            ngram=1, n_jobs=5)
+        # TODO labelごとの文書数を保存する変数を用意する
+        self.csr_matrix, self.label_id, self.vocab_id, self.n_docs = data_converter_python3.convert_data(
+                input_dict,
+                ngram=1, n_jobs=5)
 
     def test_normal_fit_transform(self):
         pmi_object = PMI_python3.PMI()
         scored_matrix = pmi_object.fit_transform(
             X=self.csr_matrix,
-            n_jobs=1
+            n_jobs=1,
+            n_docs=self.n_docs
         )
         assert isinstance(scored_matrix, csr_matrix)
 
@@ -40,7 +43,8 @@ class TestPmiPython3(unittest.TestCase):
         pmi_object = PMI_python3.PMI()
         scored_matrix = pmi_object.fit_transform(
             X=self.csr_matrix,
-            n_jobs=5
+            n_jobs=5,
+            n_docs=self.n_docs
         )
         assert isinstance(scored_matrix, csr_matrix)
 
@@ -48,9 +52,11 @@ class TestPmiPython3(unittest.TestCase):
         pmi_object = PMI_python3.PMI()
         scored_matrix = pmi_object.fit_transform(
             X=self.csr_matrix,
-            n_jobs=5
+            n_jobs=1,
+            n_docs=self.n_docs
         )
         assert isinstance(scored_matrix, csr_matrix)
+        scored_matrix_dense = scored_matrix.toarray()
 
         # TODO PMI classの中で一発変換したいところ。inputからoutputまで通しで
         # TODO それって、別のクラスを立てた方がいいのでは？

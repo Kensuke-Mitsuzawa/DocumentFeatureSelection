@@ -289,10 +289,17 @@ def convert_data(labeled_structure, ngram=1, n_jobs=1):
     logger.debug(msg='Finished pre-processing before CSR matrix')
     csr_matrix_ = make_csr_objects(row, col, data, max(vocabulary.values())+1, len(token_freq_document))
 
+    # 文書数をカウントする
+    n_docs = len([doc for label_doc in labeled_structure.values() for doc in label_doc])
+
     assert isinstance(csr_matrix_, csr_matrix)
     assert isinstance(label_group_dict, dict)
     assert isinstance(vocabulary, dict)
-    return csr_matrix_, label_group_dict, vocabulary
+    assert isinstance(n_docs, int)
+    # TODO labelごとの文書数を保存する変数を用意する
+    # TODO データの戻り値をなんとかする。クラス化しても構わない。
+    # データ変形のコードをクラス化を考慮する。複雑になりすぎている
+    return csr_matrix_, label_group_dict, vocabulary, n_docs
 
 # -------------------------------------------------------------------------------------------------------------------
 # function for output

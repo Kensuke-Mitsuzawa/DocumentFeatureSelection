@@ -26,7 +26,7 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, y=None, n_jobs=1):
+    def fit_transform(self, X, n_docs, y=None, n_jobs=1):
         """Main method of PMI class.
 
         :param X:
@@ -34,6 +34,7 @@ class PMI(object):
         :param n_jobs:
         :return:
         """
+        # TODO labelごとの文書数を保存する変数を用意する
         assert isinstance(X, csr_matrix)
 
         matrix_size = X.shape
@@ -46,6 +47,7 @@ class PMI(object):
         pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs)(
             joblib.delayed(self.docId_word_PMI)(
                 X=X,
+                n_docs=n_docs,
                 feature_index=feature_index,
                 sample_index=sample_index
             )
@@ -65,7 +67,7 @@ class PMI(object):
 
         return pmi_featured_csr_matrix
 
-    def docId_word_PMI(self, X, feature_index, sample_index):
+    def docId_word_PMI(self, X, n_docs, feature_index, sample_index):
         """Calculate PMI score for fit_format()
 
         :param X:
@@ -76,17 +78,19 @@ class PMI(object):
         :return:
         """
         assert isinstance(X, csr_matrix)
+        assert isinstance(n_docs, int)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
         pmi_score = self.pmi(
             X=X,
+            n_docs=n_docs,
             feature_index=feature_index,
             sample_index=sample_index
         )
         return sample_index, feature_index, pmi_score
 
-    def pmi(self, X, feature_index, sample_index):
+    def pmi(self, X, n_docs, feature_index, sample_index):
         """get PMI score for given feature & sample index
 
         :param X:
@@ -94,7 +98,10 @@ class PMI(object):
         :param sample_index:
         :return:
         """
+        # TODO labelごとの文書数を保存する変数を用意する
+
         assert isinstance(X, csr_matrix)
+        assert isinstance(n_docs, int)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
@@ -105,8 +112,10 @@ class PMI(object):
         n_01 = X[sample_index, feature_indexes].sum()
         n_11 = X[sample_index, feature_index].sum()
         n_10 = X[sample_indexes, feature_index].sum()
-        n_00 = X.sum() - n_01 - n_11 - n_10
-        N = X.sum()
+        n_00 = n_docs - n_01 - n_11 - n_10
+        N = n_docs
+
+        dense_x = X.toarray()
 
         if n_11 == 0.0 or n_10 == 0.0 or n_01 == 0.0 or n_00 == 0.0:
             return 0
@@ -116,4 +125,14 @@ class PMI(object):
             temp3 = n_10/N * math.log((N*n_10)/((n_10+n_11)*(n_00+n_10)), 2)
             temp4 = n_00/N * math.log((N*n_00)/((n_00+n_01)*(n_00+n_10)), 2)
             score = temp1 + temp2 + temp3 + temp4
+
+            if sample_index==0 and feature_index==2:
+                print('a - bb', score)
+
+            if sample_index==0 and feature_index==4:
+                print('a - hero', score)
+
+            if sample_index==0 and feature_index==5:
+                print('a - ok', score)
+
             return score
