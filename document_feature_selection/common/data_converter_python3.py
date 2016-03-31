@@ -25,7 +25,7 @@ PosTuple = namedtuple('PosTuple', ('doc_id', 'word_id', 'document_frequency'))
 
 __author__ = 'kensuke-mi'
 
-"""This class generates PMI featured matrix.
+"""
 
 Example:
     >>> input_format = {
@@ -69,7 +69,7 @@ def check_data_structure(labeled_structure):
 
 
 def generate_document_dict(documents):
-    """This function gets #Document-frequency in given list of documents
+    """This function gets Document-frequency in given list of documents
 
     :param documents [[str]]:
     :return dict that represents document frequency:
@@ -100,6 +100,8 @@ def make_document_frequency_data(labeled_structure):
     assert isinstance(labeled_structure, dict)
 
     vocabulary_list = list(set(utils.flatten(labeled_structure.values())))
+    vocabulary_list = sorted(vocabulary_list)
+
     v = {t: index for index, t in enumerate(vocabulary_list)}
 
     # make label: id dictionary structure
@@ -108,8 +110,7 @@ def make_document_frequency_data(labeled_structure):
     token_freq_document = []
     document_index = 0
 
-
-    for key, docs in labeled_structure.items():
+    for key, docs in sorted(labeled_structure.items(), key=lambda key_value_tuple: key_value_tuple[0]):
         token_freq_document.append(generate_document_dict(docs))
         label_group_dict.update({key: document_index})
         document_index += 1
@@ -170,7 +171,11 @@ def preprocess_csr_matrix(token_freq_document, vocabulary, n_jobs):
         )
         for doc_id, doc_freq_obj in enumerate(token_freq_document)
     )
-    value_position_list = [l for set in set_value_position_list for l in set]
+    value_position_list = sorted(
+            [l for set in set_value_position_list for l in set],
+        key=lambda pos_tuple: (pos_tuple[0], pos_tuple[1], pos_tuple[2])
+    )
+
     row, col, data = make_csr_list(value_position_list)
 
     return row, col, data
@@ -276,7 +281,11 @@ def convert_data(labeled_structure, ngram=1, n_jobs=1):
     # convert data structure
     token_freq_document, label_group_dict, vocabulary = make_document_frequency_data(labeled_structure)
     # make set of tuples to construct csr_matrix
-    row, col, data = preprocess_csr_matrix(token_freq_document=token_freq_document, vocabulary=vocabulary, n_jobs=n_jobs)
+    row, col, data = preprocess_csr_matrix(
+            token_freq_document=token_freq_document,
+            vocabulary=vocabulary,
+            n_jobs=n_jobs
+    )
     logger.debug(msg='Finished pre-processing before CSR matrix')
     csr_matrix_ = make_csr_objects(row, col, data, max(vocabulary.values())+1, len(token_freq_document))
 

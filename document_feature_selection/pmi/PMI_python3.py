@@ -27,6 +27,13 @@ class PMI(object):
         pass
 
     def fit_transform(self, X, y=None, n_jobs=1):
+        """Main method of PMI class.
+
+        :param X:
+        :param y:
+        :param n_jobs:
+        :return:
+        """
         assert isinstance(X, csr_matrix)
 
         matrix_size = X.shape
