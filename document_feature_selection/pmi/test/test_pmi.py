@@ -3,8 +3,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from document_feature_selection.pmi.pmi_csr_matrix import make_pmi_matrix
-from document_feature_selection.pmi.pmi import fit_format
+from document_feature_selection.pmi.UNUSED_pmi_csr_matrix import make_pmi_matrix
+from document_feature_selection.pmi.UNUSED_pmi import fit_format
 from document_feature_selection.pmi import PMI
 from scipy.sparse import csr_matrix
 from document_feature_selection.pmi import pmi_single_process_main

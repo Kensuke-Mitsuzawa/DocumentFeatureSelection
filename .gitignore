@@ -61,4 +61,7 @@ docs/_build/
 # PyBuilder
 target/
 
+# custom
+envs/
 package/
+
