@@ -25,8 +25,8 @@ class TestPmiPython3(unittest.TestCase):
                 ["aa", "xx", "cc"],
             ]
         }
-        # TODO labelごとの文書数を保存する変数を用意する
-        self.csr_matrix, self.label_id, self.vocab_id, self.n_docs = data_converter_python3.convert_data(
+
+        self.csr_matrix, self.label_id, self.vocab_id, self.n_docs_distribution = data_converter_python3.convert_data(
                 input_dict,
                 ngram=1, n_jobs=5)
 
@@ -35,7 +35,7 @@ class TestPmiPython3(unittest.TestCase):
         scored_matrix = pmi_object.fit_transform(
             X=self.csr_matrix,
             n_jobs=1,
-            n_docs=self.n_docs
+            n_docs_distribution=self.n_docs_distribution
         )
         assert isinstance(scored_matrix, csr_matrix)
 
@@ -44,7 +44,7 @@ class TestPmiPython3(unittest.TestCase):
         scored_matrix = pmi_object.fit_transform(
             X=self.csr_matrix,
             n_jobs=5,
-            n_docs=self.n_docs
+            n_docs_distribution=self.n_docs_distribution
         )
         assert isinstance(scored_matrix, csr_matrix)
 
@@ -53,7 +53,7 @@ class TestPmiPython3(unittest.TestCase):
         scored_matrix = pmi_object.fit_transform(
             X=self.csr_matrix,
             n_jobs=1,
-            n_docs=self.n_docs
+            n_docs_distribution=self.n_docs_distribution
         )
         assert isinstance(scored_matrix, csr_matrix)
         scored_matrix_dense = scored_matrix.toarray()

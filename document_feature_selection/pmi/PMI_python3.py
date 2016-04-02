@@ -26,20 +26,16 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, n_docs, y=None, n_jobs=1):
+    def fit_transform(self, X, n_docs_distribution, n_jobs=1):
         """Main method of PMI class.
-
-        :param X:
-        :param y:
-        :param n_jobs:
-        :return:
         """
-        # TODO labelごとの文書数を保存する変数を用意する
         assert isinstance(X, csr_matrix)
+        assert isinstance(n_docs_distribution, list)
 
         matrix_size = X.shape
         sample_range = list(range(0, matrix_size[0]-1))
         feature_range = list(range(0, matrix_size[1]-1))
+        n_total_document = sum(n_docs_distribution)
 
         logger.debug(msg='Start calculating PMI with n(process)={}'.format(n_jobs))
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
@@ -47,9 +43,10 @@ class PMI(object):
         pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs)(
             joblib.delayed(self.docId_word_PMI)(
                 X=X,
-                n_docs=n_docs,
+                n_docs_distribution=n_docs_distribution,
                 feature_index=feature_index,
-                sample_index=sample_index
+                sample_index=sample_index,
+                n_total_doc=n_total_document
             )
             for sample_index in sample_range
             for feature_index in feature_range
@@ -67,7 +64,7 @@ class PMI(object):
 
         return pmi_featured_csr_matrix
 
-    def docId_word_PMI(self, X, n_docs, feature_index, sample_index):
+    def docId_word_PMI(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index):
         """Calculate PMI score for fit_format()
 
         :param X:
@@ -78,19 +75,20 @@ class PMI(object):
         :return:
         """
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs, int)
+        assert isinstance(n_docs_distribution, list)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
         pmi_score = self.pmi(
             X=X,
-            n_docs=n_docs,
+            n_docs_distribution=n_docs_distribution,
             feature_index=feature_index,
-            sample_index=sample_index
+            sample_index=sample_index,
+            n_total_doc=n_total_doc
         )
         return sample_index, feature_index, pmi_score
 
-    def pmi(self, X, n_docs, feature_index, sample_index):
+    def pmi(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index):
         """get PMI score for given feature & sample index
 
         :param X:
@@ -98,41 +96,30 @@ class PMI(object):
         :param sample_index:
         :return:
         """
-        # TODO labelごとの文書数を保存する変数を用意する
-
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs, int)
+        assert isinstance(n_docs_distribution, list)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
         matrix_size = X.shape
-        sample_indexes = [i for i in range(0, matrix_size[0] - 1) if i != sample_index]
-        feature_indexes = [i for i in range(0, matrix_size[1] - 1) if i != feature_index]
+        sample_indexes = [i for i in range(0, matrix_size[0]) if i != sample_index]
 
-        n_01 = X[sample_index, feature_indexes].sum()
-        n_11 = X[sample_index, feature_index].sum()
+        # n_11 is #docs having feature(i.e. word) in the specified index(label)
+        n_11 = X[sample_index, feature_index]
+        # n_01 is #docs NOT having feature in the specified index(label)
+        n_01 = n_docs_distribution[sample_index] - n_11
+        # n_10 is #docs having feature in NOT specified index(indexes except specified index)
         n_10 = X[sample_indexes, feature_index].sum()
-        n_00 = n_docs - n_01 - n_11 - n_10
-        N = n_docs
-
-        dense_x = X.toarray()
+        # n_00 is #docs NOT having feature in NOT specified index(indexes except specified index)
+        n_00 = n_total_doc - (n_10 + n_docs_distribution[sample_index])
 
         if n_11 == 0.0 or n_10 == 0.0 or n_01 == 0.0 or n_00 == 0.0:
             return 0
         else:
-            temp1 = n_11/N * math.log((N*n_11)/((n_10+n_11)*(n_01+n_11)), 2)
-            temp2 = n_01/N * math.log((N*n_01)/((n_00+n_01)*(n_01+n_11)), 2)
-            temp3 = n_10/N * math.log((N*n_10)/((n_10+n_11)*(n_00+n_10)), 2)
-            temp4 = n_00/N * math.log((N*n_00)/((n_00+n_01)*(n_00+n_10)), 2)
+            temp1 = n_11/n_total_doc * math.log((n_total_doc*n_11)/((n_10+n_11)*(n_01+n_11)), 2)
+            temp2 = n_01/n_total_doc * math.log((n_total_doc*n_01)/((n_00+n_01)*(n_01+n_11)), 2)
+            temp3 = n_10/n_total_doc * math.log((n_total_doc*n_10)/((n_10+n_11)*(n_00+n_10)), 2)
+            temp4 = n_00/n_total_doc * math.log((n_total_doc*n_00)/((n_00+n_01)*(n_00+n_10)), 2)
             score = temp1 + temp2 + temp3 + temp4
-
-            if sample_index==0 and feature_index==2:
-                print('a - bb', score)
-
-            if sample_index==0 and feature_index==4:
-                print('a - hero', score)
-
-            if sample_index==0 and feature_index==5:
-                print('a - ok', score)
 
             return score

@@ -50,6 +50,8 @@ Example:
 """
 
 
+
+
 def check_data_structure(labeled_structure):
     """This function checks input data structure
 
@@ -219,6 +221,32 @@ def SUB_FUNC_ngram_data_conversion(key, docs, n):
     return (key, new_docs)
 
 
+def count_document_distribution(labeled_documents, label2id_dict):
+    """This method count n(docs) per label.
+
+    :param labeled_documents:
+    :param label2id_dict:
+    :return:
+    """
+    assert isinstance(labeled_documents, dict)
+    assert isinstance(label2id_dict, dict)
+
+    # count n(docs) per label
+    n_doc_distribution = {
+        label: len(document_lists)
+        for label, document_lists
+        in labeled_documents.items()
+    }
+
+    # make list of distribution
+    n_doc_distribution_list = [0] * len(labeled_documents.keys())
+
+    for label_string, n_doc in n_doc_distribution.items():
+        n_doc_distribution_list[label2id_dict[label_string]] = n_doc
+
+    return n_doc_distribution_list
+
+
 def convert_data(labeled_structure, ngram=1, n_jobs=1):
     """This function makes document-frequency matrix for PMI calculation.
     Document-frequency matrix is scipy.csr_matrix.
@@ -279,7 +307,7 @@ def convert_data(labeled_structure, ngram=1, n_jobs=1):
 
     logger.debug(msg='Now pre-processing before CSR matrix')
     # convert data structure
-    token_freq_document, label_group_dict, vocabulary = make_document_frequency_data(labeled_structure)
+    token_freq_document, label2id_dict, vocabulary = make_document_frequency_data(labeled_structure)
     # make set of tuples to construct csr_matrix
     row, col, data = preprocess_csr_matrix(
             token_freq_document=token_freq_document,
@@ -289,17 +317,17 @@ def convert_data(labeled_structure, ngram=1, n_jobs=1):
     logger.debug(msg='Finished pre-processing before CSR matrix')
     csr_matrix_ = make_csr_objects(row, col, data, max(vocabulary.values())+1, len(token_freq_document))
 
-    # 文書数をカウントする
-    n_docs = len([doc for label_doc in labeled_structure.values() for doc in label_doc])
+    # count n(docs) per label
+    n_docs_distribution = count_document_distribution(
+        labeled_documents=labeled_structure,
+        label2id_dict=label2id_dict
+    )
 
     assert isinstance(csr_matrix_, csr_matrix)
-    assert isinstance(label_group_dict, dict)
+    assert isinstance(label2id_dict, dict)
     assert isinstance(vocabulary, dict)
-    assert isinstance(n_docs, int)
-    # TODO labelごとの文書数を保存する変数を用意する
-    # TODO データの戻り値をなんとかする。クラス化しても構わない。
-    # データ変形のコードをクラス化を考慮する。複雑になりすぎている
-    return csr_matrix_, label_group_dict, vocabulary, n_docs
+    assert isinstance(n_docs_distribution, list)
+    return csr_matrix_, label2id_dict, vocabulary, n_docs_distribution
 
 # -------------------------------------------------------------------------------------------------------------------
 # function for output
