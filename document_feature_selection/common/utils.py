@@ -3,14 +3,28 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
+from collections import Iterable
 from scipy.sparse.csr import csr_matrix
 from numpy import ndarray
 import logging
 import collections
+import joblib
+import sys
+python_version = sys.version_info
 
 __author__ = 'kensuke-mi'
 
 ROW_COL_VAL = collections.namedtuple('ROW_COL_VAL', 'row col val')
+
+
+def flatten(lis):
+     for item in lis:
+         if isinstance(item, Iterable) and not isinstance(item, str):
+             for x in flatten(item):
+                 yield x
+         else:
+             yield item
+
 
 def __conv_into_dict_format(pmi_word_score_items):
     out_format_structure = {}
@@ -72,7 +86,8 @@ def get_word(row_col_val_tuple, vocabulary):
 
     return vocabulary[row_col_val_tuple.col]
 
-def feature_extraction_single(weight_csr_matrix, vocabulary, label_id, logger, outformat='items'):
+
+def DELETED_feature_extraction_single(weight_csr_matrix, vocabulary, label_id, logger, outformat='items'):
     """This function returns PMI score between label and words.
 
     Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
@@ -117,7 +132,29 @@ def feature_extraction_single(weight_csr_matrix, vocabulary, label_id, logger, o
     return word_score_items
 
 
-def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, logger, outformat='items', n_job=1):
+def SUB_FUNC_feature_extraction(row_col_val_tuple, id2label, id2vocab):
+    """This function returns PMI score between label and words.
+
+    Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
+    [NOTE] This is not FREQUENCY.
+
+    Ex.
+    If 'iPhone' appears in 5 documents of 'IT' category document set, value must be 5.
+
+    Even if 'iPhone' appears 10 time in 'IT' category document set, it does not matter.
+
+    """
+    assert isinstance(row_col_val_tuple, tuple)
+    assert isinstance(row_col_val_tuple, ROW_COL_VAL)
+
+    return {
+        'score': row_col_val_tuple.val,
+        'label': get_label(row_col_val_tuple, id2label),
+        'word': get_word(row_col_val_tuple, id2vocab)
+    }
+
+
+def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, logger, n_jobs=1):
     """Get dictionary structure of PMI featured scores.
 
     You can choose 'dict' or 'items' for ```outformat``` parameter.
@@ -145,17 +182,30 @@ def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, logger
     assert isinstance(weighted_matrix, csr_matrix)
     assert isinstance(vocabulary, dict)
     assert isinstance(label_group_dict, dict)
-    assert isinstance(n_job, int)
+    assert isinstance(n_jobs, int)
 
-    if n_job==1:
-        score_objects = feature_extraction_single(
-            weight_csr_matrix=weighted_matrix,
-            vocabulary=vocabulary,
-            label_id=label_group_dict,
-            logger=logger,
-            outformat=outformat
-        )
+    logger.debug(msg='Start making scored dictionary object from scored matrix')
+    logger.debug(msg='Input matrix size= {} * {}'.format(weighted_matrix.shape[0], weighted_matrix.shape[1]))
+
+    value_index_items = make_non_zero_information(weighted_matrix)
+    id2label = {id:label for label, id in label_group_dict.items()}
+    if python_version > (3, 0, 0):
+        id2vocab = {id:voc for voc, id in vocabulary.items()}
     else:
-        raise Exception('not implemented yet')
+        id2vocab = {id:voc for voc, id in vocabulary.viewitems()}
+
+    score_objects = joblib.Parallel(n_jobs=n_jobs)(
+        joblib.delayed(SUB_FUNC_feature_extraction)(
+            row_col_val_tuple,
+            id2label,
+            id2vocab
+        )
+        for row_col_val_tuple in value_index_items
+    )
+
+    logger.debug(msg='Finished making scored dictionary')
+
 
     return score_objects
+
+

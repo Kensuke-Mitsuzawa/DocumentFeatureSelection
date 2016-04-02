@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from logging import Logger
 from ..pmi import pmi_single_process_main
-from ..pmi.pmi_csr_matrix import make_pmi_matrix
+from ..pmi.UNUSED_pmi_csr_matrix import make_pmi_matrix
 from . import tf_idf
 __author__ = 'kensuke-mi'
 
