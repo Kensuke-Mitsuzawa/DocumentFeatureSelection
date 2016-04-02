@@ -1,5 +1,6 @@
 import unittest
 from document_feature_selection.common import data_converter_python3
+from document_feature_selection.common.data_converter_python3 import DataCsrMatrix
 from document_feature_selection.pmi import PMI_python3
 from scipy.sparse import csr_matrix
 
@@ -26,22 +27,21 @@ class TestPmiPython3(unittest.TestCase):
             ]
         }
 
-        #self.csr_matrix, self.label_id, self.vocab_id, self.n_docs_distribution = data_converter_python3.convert_data(
-        #        input_dict,
-        #        ngram=1, n_jobs=5)
-        self.data_csr_matrix = data_converter_python3.DataConverter().convert_data(
+        data_csr_matrix = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=input_dict,
             ngram=1,
             n_jobs=5
         )
-
-        print(self.data_csr_matrix)
-
+        assert isinstance(data_csr_matrix, DataCsrMatrix)
+        self.label2id_dict = data_csr_matrix.label2id_dict
+        self.csr_matrix_ = data_csr_matrix.csr_matrix_
+        self.n_docs_distribution = data_csr_matrix.n_docs_distribution
+        self.vocabulary = data_csr_matrix.vocabulary
 
     def test_normal_fit_transform(self):
         pmi_object = PMI_python3.PMI()
         scored_matrix = pmi_object.fit_transform(
-            X=self.csr_matrix,
+            X=self.csr_matrix_,
             n_jobs=1,
             n_docs_distribution=self.n_docs_distribution
         )
@@ -50,7 +50,7 @@ class TestPmiPython3(unittest.TestCase):
     def test_multi_process_fit_transform(self):
         pmi_object = PMI_python3.PMI()
         scored_matrix = pmi_object.fit_transform(
-            X=self.csr_matrix,
+            X=self.csr_matrix_,
             n_jobs=5,
             n_docs_distribution=self.n_docs_distribution
         )
@@ -59,21 +59,21 @@ class TestPmiPython3(unittest.TestCase):
     def test_output_result_pmi(self):
         pmi_object = PMI_python3.PMI()
         scored_matrix = pmi_object.fit_transform(
-            X=self.csr_matrix,
-            n_jobs=1,
+            X=self.csr_matrix_,
+            n_jobs=5,
             n_docs_distribution=self.n_docs_distribution
         )
         assert isinstance(scored_matrix, csr_matrix)
 
-        # TODO PMI classの中で一発変換したいところ。inputからoutputまで通しで
-        # TODO それって、別のクラスを立てた方がいいのでは？
-        pmi_scored_dict = data_converter_python3.get_weight_feature_dictionary(
+        pmi_scored_dict = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
             scored_matrix=scored_matrix,
-            label_id_dict=self.label_id,
-            feature_id_dict=self.vocab_id,
+            label2id_dict=self.label2id_dict,
+            vocaburary2id_dict=self.vocabulary,
             outformat='items',
-            n_jobs=5
+            n_jobs=1
         )
+
+        assert isinstance(pmi_scored_dict, list)
         import pprint
         pprint.pprint(pmi_scored_dict)
 
