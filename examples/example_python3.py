@@ -1,7 +1,7 @@
 #! -*- coding: utf-8 -*-
 __author__ = 'kensuke-mi'
 
-from document_feature_selection import PMI, TFIDF, DataConverter, DataCsrMatrix
+from document_feature_selection import PMI, TFIDF, DataConverter, DataCsrMatrix, SOA
 from scipy.sparse.csr import csr_matrix
 import logging
 logger = logging.Logger(level=logging.DEBUG, name='test')
@@ -80,3 +80,56 @@ tfidf_score_result = DataConverter().ScoreMatrix2ScoreDictionary(
 print('-'*30)
 print('TFIDF score')
 pprint.pprint(tfidf_score_result)
+
+
+# --------------------------------------------------------------------
+# example for getting SOA score
+# According to original paper "Using Hashtags to Capture Fine Emotion Categories from Tweets", Salif, 2013, he used SOA based on Term-frequency.
+# On the contrary, it is normal to use document-frequency for PMI computing. SOA is based on PMI computing.
+# I suggest you can try both of Term-frequency based and Doc-frequency based.
+
+
+# getting term-frequency matrix.
+term_freq_information = DataConverter().labeledMultiDocs2TermFreqMatrix(
+    labeled_documents=input_dict,
+    ngram=1,
+    n_jobs=5
+)
+assert isinstance(term_freq_information, DataCsrMatrix)
+
+doc_freq_information = DataConverter().labeledMultiDocs2DocFreqMatrix(
+    labeled_documents=input_dict,
+    ngram=1,
+    n_jobs=5
+)
+assert isinstance(doc_freq_information, DataCsrMatrix)
+
+term_freq_based_soa_score = SOA().fit_transform(X=term_freq_information.csr_matrix_,
+                    n_docs_distribution=term_freq_information.n_docs_distribution,
+                    n_jobs=5)
+assert isinstance(term_freq_based_soa_score, csr_matrix)
+
+doc_freq_based_soa_score = SOA().fit_transform(X=doc_freq_information.csr_matrix_,
+                    n_docs_distribution=doc_freq_information.n_docs_distribution,
+                    n_jobs=5)
+assert isinstance(doc_freq_based_soa_score, csr_matrix)
+
+
+term_soa_score_dict = DataConverter().ScoreMatrix2ScoreDictionary(
+    scored_matrix=term_freq_based_soa_score,
+    label2id_dict=term_freq_information.label2id_dict,
+    vocaburary2id_dict=term_freq_information.vocabulary
+)
+
+doc_soa_score_dict = DataConverter().ScoreMatrix2ScoreDictionary(
+    scored_matrix=doc_freq_based_soa_score,
+    label2id_dict=doc_freq_information.label2id_dict,
+    vocaburary2id_dict=doc_freq_information.vocabulary
+)
+
+
+print('Term-frequency based soa score')
+pprint.pprint(term_soa_score_dict)
+
+print('Doc-frequency based soa score')
+pprint.pprint(doc_soa_score_dict)

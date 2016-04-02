@@ -10,3 +10,4 @@ python_version = sys.version_info
 from document_feature_selection.common.data_converter import DataConverter, DataCsrMatrix
 from document_feature_selection.pmi.PMI import PMI
 from document_feature_selection.tf_idf.tf_idf import TFIDF
+from document_feature_selection.soa.soa import SOA
