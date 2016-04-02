@@ -26,9 +26,17 @@ class TestPmiPython3(unittest.TestCase):
             ]
         }
 
-        self.csr_matrix, self.label_id, self.vocab_id, self.n_docs_distribution = data_converter_python3.convert_data(
-                input_dict,
-                ngram=1, n_jobs=5)
+        #self.csr_matrix, self.label_id, self.vocab_id, self.n_docs_distribution = data_converter_python3.convert_data(
+        #        input_dict,
+        #        ngram=1, n_jobs=5)
+        self.data_csr_matrix = data_converter_python3.DataConverter().convert_data(
+            labeled_documents=input_dict,
+            ngram=1,
+            n_jobs=5
+        )
+
+        print(self.data_csr_matrix)
+
 
     def test_normal_fit_transform(self):
         pmi_object = PMI_python3.PMI()
@@ -56,7 +64,6 @@ class TestPmiPython3(unittest.TestCase):
             n_docs_distribution=self.n_docs_distribution
         )
         assert isinstance(scored_matrix, csr_matrix)
-        scored_matrix_dense = scored_matrix.toarray()
 
         # TODO PMI classの中で一発変換したいところ。inputからoutputまで通しで
         # TODO それって、別のクラスを立てた方がいいのでは？

@@ -1,4 +1,5 @@
 from document_feature_selection.common import data_converter_python3
+from document_feature_selection.common.data_converter_python3 import DataCsrMatrix
 from document_feature_selection.pmi import PMI_python3
 from scipy.sparse import csr_matrix
 import unittest
@@ -33,25 +34,31 @@ class TestDataConverter(unittest.TestCase):
         """
         n_joblib_tasks = 2
 
-        csr_matrix_1, label_group_dict_1, vocabulary_1 = data_converter_python3.convert_data(
-            labeled_structure=self.input_dict,
+        data_csr_matrix1 = data_converter_python3.DataConverter().labeledMultiDocs2Matrix(
+            labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=n_joblib_tasks
         )
+        assert isinstance(data_csr_matrix1, DataCsrMatrix)
+        csr_matrix_1, label_group_dict_1, vocabulary_1, n_doc_distri_1 = data_csr_matrix1
         dense_matrix_1 = csr_matrix_1.toarray()
 
-        csr_matrix_2, label_group_dict_2, vocabulary_2 = data_converter_python3.convert_data(
-            labeled_structure=self.input_dict,
+        data_csr_matrix2 = data_converter_python3.DataConverter().labeledMultiDocs2Matrix(
+            labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=n_joblib_tasks
         )
+        assert isinstance(data_csr_matrix2, DataCsrMatrix)
+        csr_matrix_2, label_group_dict_2, vocabulary_2, n_doc_distri_2 = data_csr_matrix2
         dense_matrix_2 = csr_matrix_2.toarray()
 
-        csr_matrix_3, label_group_dict_3, vocabulary_3 = data_converter_python3.convert_data(
-            labeled_structure=self.input_dict,
+        data_csr_matrix3 = data_converter_python3.DataConverter().labeledMultiDocs2Matrix(
+            labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=n_joblib_tasks
         )
+        assert isinstance(data_csr_matrix3, DataCsrMatrix)
+        csr_matrix_3, label_group_dict_3, vocabulary_3, n_doc_distri_3 = data_csr_matrix3
         dense_matrix_3 = csr_matrix_3.toarray()
 
         assert numpy.array_equal(dense_matrix_1, dense_matrix_2)
@@ -72,10 +79,10 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary = data_converter_python3.convert_data(
-            labeled_structure=self.input_dict,
+        csr_matrix_, label_group_dict, vocabulary, n_doc_dstri = data_converter_python3.DataConverter().labeledMultiDocs2Matrix(
+            labeled_documents=self.input_dict,
             ngram=1,
-            n_jobs=1
+            n_jobs=5
         )
 
         assert isinstance(csr_matrix_, csr_matrix)
@@ -107,8 +114,8 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary = data_converter_python3.convert_data(
-            labeled_structure=self.input_dict,
+        csr_matrix_, label_group_dict, vocabulary, n_doc_distri = data_converter_python3.DataConverter().labeledMultiDocs2Matrix(
+            labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
         )
@@ -123,9 +130,9 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary = data_converter_python3.convert_data(
-            labeled_structure=self.input_dict,
-            ngram=3,
+        csr_matrix_, label_group_dict, vocabulary, n_doc_distri = data_converter_python3.DataConverter().labeledMultiDocs2Matrix(
+            labeled_documents=self.input_dict,
+            ngram=1,
             n_jobs=5
         )
 
@@ -133,14 +140,14 @@ class TestDataConverter(unittest.TestCase):
         assert isinstance(label_group_dict, dict)
         assert isinstance(vocabulary, dict)
 
-
+    '''
     def test_get_pmi_feature_dictionary(self):
         """checks if it works or not, that getting scored dictionary object from scored_matrix
 
         :return:
         """
-        csr_matrix_, label_group_dict, vocabulary = data_converter_python3.convert_data(
-            labeled_structure=self.input_dict,
+        csr_matrix_, label_group_dict, vocabulary, n_doc_distri = data_converter_python3.DataConverter().labeledMultiDocs2Matrix(
+            labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
         )
@@ -200,7 +207,7 @@ class TestDataConverter(unittest.TestCase):
         )
         assert isinstance(pmi_scored_dictionary_objects, list)
         for d in pmi_scored_dictionary_objects: assert isinstance(d, dict)
-        logging.debug(pmi_scored_dictionary_objects)
+        logging.debug(pmi_scored_dictionary_objects)'''
 
 
 if __name__ == '__main__':
