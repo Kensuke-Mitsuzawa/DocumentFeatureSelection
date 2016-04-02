@@ -122,4 +122,7 @@ class PMI(object):
             temp4 = n_00/n_total_doc * math.log((n_total_doc*n_00)/((n_00+n_01)*(n_00+n_10)), 2)
             score = temp1 + temp2 + temp3 + temp4
 
+            if score < 0:
+                raise Exception('score under 0 is detected. Something strange in Input matrix. Check your input matrix.')
+
             return score

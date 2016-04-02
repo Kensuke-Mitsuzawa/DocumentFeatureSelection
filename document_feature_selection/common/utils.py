@@ -87,61 +87,15 @@ def get_word(row_col_val_tuple, vocabulary):
     return vocabulary[row_col_val_tuple.col]
 
 
-def DELETED_feature_extraction_single(weight_csr_matrix, vocabulary, label_id, logger, outformat='items'):
-    """This function returns PMI score between label and words.
-
-    Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
-    [NOTE] This is not FREQUENCY.
-
-    Ex.
-    If 'iPhone' appears in 5 documents of 'IT' category document set, value must be 5.
-
-    Even if 'iPhone' appears 10 time in 'IT' category document set, it does not matter.
-
-
-    :param scipy.csr_matrix:pmi_csr_matrix document-frequency of input data
-    :param dict vocabulary: vocabulary set dict of input data
-    :param dict label_id: document id dict of input data
-    :param logging.Logger logger:
-    :param str outformat: you can choose 'items' or 'dict':
-    :return:
-    """
-    assert isinstance(weight_csr_matrix, csr_matrix)
-    assert isinstance(logger, logging.Logger)
-    assert isinstance(vocabulary, dict)
-    assert isinstance(label_id, dict)
-
-    logging.debug(msg='Start making score objects')
-
-    value_index_items = make_non_zero_information(weight_csr_matrix)
-    id2label = {id:label for label, id in label_id.items()}
-    id2vocab = {id:voc for voc, id in vocabulary.viewitems()}
-
-    word_score_items = [
-        {
-            'score': row_col_val_tuple.val,
-            'label': get_label(row_col_val_tuple, id2label),
-            'word': get_word(row_col_val_tuple, id2vocab)
-        }
-        for row_col_val_tuple
-        in value_index_items
-    ]
-
-    logging.debug(msg='End making score objects')
-
-    return word_score_items
-
-
 def SUB_FUNC_feature_extraction(row_col_val_tuple, id2label, id2vocab):
     """This function returns PMI score between label and words.
 
     Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
-    [NOTE] This is not FREQUENCY.
+    [NOTE] This is not TERM-FREQUENCY.
 
-    Ex.
+    For example,
     If 'iPhone' appears in 5 documents of 'IT' category document set, value must be 5.
-
-    Even if 'iPhone' appears 10 time in 'IT' category document set, it does not matter.
+    Even if 10 'iPhone' words in 'IT' category document set, value is still 5.
 
     """
     assert isinstance(row_col_val_tuple, tuple)

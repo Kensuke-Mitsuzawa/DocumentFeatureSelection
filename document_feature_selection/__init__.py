@@ -7,5 +7,6 @@ from __future__ import division
 import sys
 python_version = sys.version_info
 
-import document_feature_selection.common.data_converter_python3 as data_converter
-from document_feature_selection.pmi.PMI_python3 import PMI
+from document_feature_selection.common.data_converter import DataConverter, DataCsrMatrix
+from document_feature_selection.pmi.PMI import PMI
+from document_feature_selection.tf_idf.tf_idf import TFIDF

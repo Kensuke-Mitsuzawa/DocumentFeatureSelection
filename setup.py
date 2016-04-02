@@ -3,11 +3,8 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '0.5'
+__version__ = '0.6'
 
-import codecs
-import os.path
-import re
 import sys
 from setuptools import setup, find_packages
 
@@ -16,13 +13,21 @@ python_version = sys.version_info
 if python_version >= (3, 0, 0):
     install_requires = ['six', 'setuptools>=1.0', 'joblib', 'scipy', 'nltk', 'scikit-learn', 'numpy']
 
-# avoid a from document-feature-selection import __version__ as version (that compiles document-feature-selection.__init__ and is not compatible with bdist_deb)
-for line in codecs.open(os.path.join('document_feature_selection', '__init__.py'), 'r', encoding='utf-8'):
-    matcher = re.match(r"""^__version__\s*=\s*['"](.*)['"]\s*$""", line)
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = open('README.md').read()
 
-# get README content from README.md file
-with codecs.open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as fd:
-    long_description = fd.read()
+
+classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Natural Language :: Japanese",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Programming Language :: Python :: 3.5"
+        ]
 
 setup(
     name='document-feature-selection',
@@ -36,7 +41,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    test_suite='document-feature-selection.tests',
+    test_suite='test.all_tests.suite',
     install_requires=install_requires,
     setup_requires=['six', 'setuptools>=1.0'],
     classifiers=[],
