@@ -59,9 +59,9 @@ In this package, SOA formula is from following paper,
 
 `Saif Mohammad and Svetlana Kiritchenko, "Using Hashtags to Capture Fine Emotion Categories from Tweets", Computational Intelligence, 01/2014; 31(2).`
 
-$$
+```math
 SOA(w, e)\ =\ log_2\frac{freq(w, e) * freq(\neg{e})}{freq(e) * freq(w, \neg{e})}
-$$
+```
 
 Where
 
