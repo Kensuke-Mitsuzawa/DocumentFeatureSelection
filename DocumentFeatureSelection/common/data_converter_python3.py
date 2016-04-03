@@ -49,7 +49,8 @@ Example:
 """
 
 
-DataCsrMatrix = namedtuple('DataCsrMatrix', ('csr_matrix_', 'label2id_dict', 'vocabulary', 'n_docs_distribution'))
+DataCsrMatrix = namedtuple('DataCsrMatrix', ('csr_matrix_', 'label2id_dict', 'vocabulary',
+                                             'n_docs_distribution', 'n_term_freq_distribution'))
 
 
 class DataConverter(object):
@@ -72,6 +73,31 @@ class DataConverter(object):
                         raise TypeError('String type must be str type')
 
         return True
+
+    def count_term_frequency_distribution(self, labeled_documents, label2id_dict):
+        """Count term-distribution per label.
+
+        :param labeled_documents:
+        :param label2id_dict:
+        :return:
+        """
+        assert isinstance(labeled_documents, dict)
+        assert isinstance(label2id_dict, dict)
+
+        # count total term-frequency per label
+        term_frequency_distribution = {
+            label: len(list(utils.flatten(document_lists)))
+            for label, document_lists
+            in labeled_documents.items()
+        }
+
+        # make list of distribution
+        term_frequency_distribution_list = [0] * len(labeled_documents.keys())
+
+        for label_string, n_doc in term_frequency_distribution.items():
+            term_frequency_distribution_list[label2id_dict[label_string]] = n_doc
+
+        return term_frequency_distribution_list
 
     def count_document_distribution(self, labeled_documents, label2id_dict):
         """This method count n(docs) per label.
@@ -138,13 +164,21 @@ class DataConverter(object):
             labeled_documents=labeled_documents,
             label2id_dict=set_document_information.label2id_dict
         )
+        # count term-frequency per label
+        term_frequency_distribution = self.count_term_frequency_distribution(
+            labeled_documents=labeled_documents,
+            label2id_dict=set_document_information.label2id_dict
+        )
 
         assert isinstance(csr_matrix_, csr_matrix)
         assert isinstance(set_document_information.label2id_dict, dict)
         assert isinstance(set_document_information.vocaburary2id_dict, dict)
         assert isinstance(n_docs_distribution, list)
-        return DataCsrMatrix(csr_matrix_, set_document_information.label2id_dict,
-                             set_document_information.vocaburary2id_dict, n_docs_distribution)
+        return DataCsrMatrix(
+                csr_matrix_,
+                set_document_information.label2id_dict,
+                set_document_information.vocaburary2id_dict,
+                n_docs_distribution, term_frequency_distribution)
 
     def labeledMultiDocs2DocFreqMatrix(self, labeled_documents, ngram=1, n_jobs=1):
         """This function makes document-frequency matrix for PMI calculation.
@@ -219,13 +253,21 @@ class DataConverter(object):
             labeled_documents=labeled_documents,
             label2id_dict=set_document_information.label2id_dict
         )
+        # count term-frequency per label
+        term_frequency_distribution = self.count_term_frequency_distribution(
+            labeled_documents=labeled_documents,
+            label2id_dict=set_document_information.label2id_dict
+        )
 
         assert isinstance(csr_matrix_, csr_matrix)
         assert isinstance(set_document_information.label2id_dict, dict)
         assert isinstance(set_document_information.vocaburary2id_dict, dict)
         assert isinstance(n_docs_distribution, list)
-        return DataCsrMatrix(csr_matrix_, set_document_information.label2id_dict,
-                             set_document_information.vocaburary2id_dict, n_docs_distribution)
+        return DataCsrMatrix(
+                csr_matrix_,
+                set_document_information.label2id_dict,
+                set_document_information.vocaburary2id_dict,
+                n_docs_distribution, term_frequency_distribution)
 
     def __conv_into_dict_format(self, word_score_items):
         out_format_structure = {}

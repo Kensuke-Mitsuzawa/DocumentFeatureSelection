@@ -39,7 +39,7 @@ class TestSoaPython3(unittest.TestCase):
 
         scored_matrix_term_freq = soa_python3.SOA().fit_transform(
             X=csr_matrix_,
-            n_docs_distribution=n_docs_distribution,
+            unit_distribution=n_docs_distribution,
             verbose=True
         )
 
@@ -67,7 +67,7 @@ class TestSoaPython3(unittest.TestCase):
 
         scored_matrix_doc_freq = soa_python3.SOA().fit_transform(
             X=csr_matrix_,
-            n_docs_distribution=n_docs_distribution,
+            unit_distribution=n_docs_distribution,
             verbose=True
         )
 

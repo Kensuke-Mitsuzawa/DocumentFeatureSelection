@@ -1,7 +1,7 @@
 #! -*- coding: utf-8 -*-
 __author__ = 'kensuke-mi'
 
-from DocumentFeatureSelection import PMI, TFIDF, DataConverter, DataCsrMatrix, SOA
+from DocumentFeatureSelection import PMI, TFIDF, DataConverter, DataCsrMatrix, SOA, BNS
 from scipy.sparse.csr import csr_matrix
 import logging
 logger = logging.Logger(level=logging.DEBUG, name='test')
@@ -105,12 +105,12 @@ doc_freq_information = DataConverter().labeledMultiDocs2DocFreqMatrix(
 assert isinstance(doc_freq_information, DataCsrMatrix)
 
 term_freq_based_soa_score = SOA().fit_transform(X=term_freq_information.csr_matrix_,
-                    n_docs_distribution=term_freq_information.n_docs_distribution,
+                    unit_distribution=term_freq_information.n_term_freq_distribution,
                     n_jobs=5)
 assert isinstance(term_freq_based_soa_score, csr_matrix)
 
 doc_freq_based_soa_score = SOA().fit_transform(X=doc_freq_information.csr_matrix_,
-                    n_docs_distribution=doc_freq_information.n_docs_distribution,
+                    unit_distribution=doc_freq_information.n_docs_distribution,
                     n_jobs=5)
 assert isinstance(doc_freq_based_soa_score, csr_matrix)
 
@@ -133,3 +133,50 @@ pprint.pprint(term_soa_score_dict)
 
 print('Doc-frequency based soa score')
 pprint.pprint(doc_soa_score_dict)
+
+
+# --------------------------------------------------------------------
+# example for getting BNS score
+# According to original paper "Lei Tang and Huan Liu, "Bias Analysis in Text Classification for Highly Skewed Data", 2005", BNS is used with term-frequency.
+# I suggest you can try both of Term-frequency based and Doc-frequency based.
+
+# Input data must contain 2 labels. Still, any label-names are plausible.
+# If you put data having more than 2 labels, BNS class returns Exception error.
+input_dict = {
+    "positive": [
+        ["I", "aa", "aa", "aa", "aa", "aa"],
+        ["bb", "aa", "aa", "aa", "aa", "aa"],
+        ["I", "aa", "hero", "some", "ok", "aa"]
+    ],
+    "negative": [
+        ["bb", "bb", "bb"],
+        ["bb", "bb", "bb"],
+        ["hero", "ok", "bb"],
+        ["hero", "cc", "bb"],
+    ]
+}
+
+doc_freq_with_2labels_information = DataConverter().labeledMultiDocs2TermFreqMatrix(
+    labeled_documents=input_dict,
+    ngram=1,
+    n_jobs=5
+)
+assert isinstance(doc_freq_with_2labels_information, DataCsrMatrix)
+
+true_class_index = doc_freq_with_2labels_information.label2id_dict['positive']
+bns_scored_csr_matrix = BNS().fit_transform(
+    X=doc_freq_with_2labels_information.csr_matrix_,
+    distribution=doc_freq_with_2labels_information.n_term_freq_distribution,
+    n_jobs=5,
+    true_index=true_class_index
+)
+assert isinstance(bns_scored_csr_matrix, csr_matrix)
+
+doc_bns_score_dict = DataConverter().ScoreMatrix2ScoreDictionary(
+    scored_matrix=bns_scored_csr_matrix,
+    label2id_dict=doc_freq_with_2labels_information.label2id_dict,
+    vocaburary2id_dict=doc_freq_with_2labels_information.vocabulary
+)
+
+print('BNS score')
+pprint.pprint(doc_bns_score_dict)

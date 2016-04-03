@@ -49,7 +49,7 @@ class TestDataConverter(unittest.TestCase):
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix1, DataCsrMatrix)
-        csr_matrix_1, label_group_dict_1, vocabulary_1, n_doc_distri_1 = data_csr_matrix1
+        csr_matrix_1, label_group_dict_1, vocabulary_1, n_doc_distri_1, n_term_distir_1 = data_csr_matrix1
         dense_matrix_1 = csr_matrix_1.toarray()
 
         data_csr_matrix2 = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
@@ -58,7 +58,7 @@ class TestDataConverter(unittest.TestCase):
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix2, DataCsrMatrix)
-        csr_matrix_2, label_group_dict_2, vocabulary_2, n_doc_distri_2 = data_csr_matrix2
+        csr_matrix_2, label_group_dict_2, vocabulary_2, n_doc_distri_2, n_term_distir_2 = data_csr_matrix2
         dense_matrix_2 = csr_matrix_2.toarray()
 
         data_csr_matrix3 = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
@@ -67,7 +67,7 @@ class TestDataConverter(unittest.TestCase):
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix3, DataCsrMatrix)
-        csr_matrix_3, label_group_dict_3, vocabulary_3, n_doc_distri_3 = data_csr_matrix3
+        csr_matrix_3, label_group_dict_3, vocabulary_3, n_doc_distri_3, n_term_distir_3 = data_csr_matrix3
         dense_matrix_3 = csr_matrix_3.toarray()
 
         assert numpy.array_equal(dense_matrix_1, dense_matrix_2)
@@ -88,11 +88,15 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary, n_doc_dstri = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        csr_matrix_information = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
         )
+        assert isinstance(csr_matrix_information, DataCsrMatrix)
+        csr_matrix_ = csr_matrix_information.csr_matrix_
+        label_group_dict = csr_matrix_information.label2id_dict
+        vocabulary = csr_matrix_information.vocabulary
 
         assert isinstance(csr_matrix_, csr_matrix)
         assert isinstance(label_group_dict, dict)
@@ -123,7 +127,7 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary, n_doc_distri = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        csr_matrix_, label_group_dict, vocabulary, n_doc_distri, n_term_distir = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
@@ -139,7 +143,7 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary, n_doc_distri = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        csr_matrix_, label_group_dict, vocabulary, n_doc_distri, n_term_distir = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
@@ -155,7 +159,7 @@ class TestDataConverter(unittest.TestCase):
 
         :return:
         """
-        csr_matrix_, label_group_dict, vocabulary, n_doc_distri = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        csr_matrix_, label_group_dict, vocabulary, n_doc_distri, n_term_distir = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5

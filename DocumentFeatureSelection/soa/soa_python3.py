@@ -18,14 +18,14 @@ class SOA(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, n_docs_distribution, n_jobs=1, verbose=False):
+    def fit_transform(self, X, unit_distribution, n_jobs=1, verbose=False):
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs_distribution, list)
+        assert isinstance(unit_distribution, list)
 
         matrix_size = X.shape
         sample_range = list(range(0, matrix_size[0]))
         feature_range = list(range(0, matrix_size[1]))
-        n_total_document = sum(n_docs_distribution)
+        n_total_document = sum(unit_distribution)
 
         logger.debug(msg='Start calculating SOA with n(process)={}'.format(n_jobs))
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
@@ -33,7 +33,7 @@ class SOA(object):
         pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs)(
             joblib.delayed(self.docId_word_soa)(
                 X=X,
-                n_docs_distribution=n_docs_distribution,
+                unit_distribution=unit_distribution,
                 feature_index=feature_index,
                 sample_index=sample_index,
                 n_total_doc=n_total_document,
@@ -56,17 +56,17 @@ class SOA(object):
         return soa_featured_csr_matrix
 
 
-    def docId_word_soa(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index, verbose=False):
+    def docId_word_soa(self, X, unit_distribution, n_total_doc, feature_index, sample_index, verbose=False):
         """
         """
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs_distribution, list)
+        assert isinstance(unit_distribution, list)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
         soa_score = self.soa(
             X=X,
-            n_docs_distribution=n_docs_distribution,
+            unit_distribution=unit_distribution,
             feature_index=feature_index,
             sample_index=sample_index,
             n_total_docs=n_total_doc,
@@ -74,10 +74,10 @@ class SOA(object):
         )
         return sample_index, feature_index, soa_score
 
-    def soa(self, X, n_docs_distribution, n_total_docs, feature_index, sample_index, verbose=False):
+    def soa(self, X, unit_distribution, n_total_docs, feature_index, sample_index, verbose=False):
         # X is either of term-frequency matrix per label or document-frequency per label
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs_distribution, list)
+        assert isinstance(unit_distribution, list)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
@@ -89,7 +89,7 @@ class SOA(object):
         # freq_w_not_e is term-frequency(or document-frequency) of w in units except the specific label e
         freq_w_not_e = X[NOT_sample_indexes, feature_index].sum()
         # freq_e is the number of the unit having specific label e
-        freq_e = n_docs_distribution[sample_index]
+        freq_e = unit_distribution[sample_index]
         # freq_not_e is the number of the unit NOT having the specific label e
         freq_not_e = n_total_docs - freq_e
 

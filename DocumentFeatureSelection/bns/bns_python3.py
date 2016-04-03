@@ -29,12 +29,12 @@ class BNS(TransformerMixin):
     def fit_transform(self, X, y=None, **fit_params):
         assert isinstance(X, csr_matrix)
 
-        if not 'n_docs_distribution' in fit_params:
-            raise Exception('You must put n_docs_distribution parameter')
-        assert isinstance(fit_params['n_docs_distribution'], (list, ndarray))
+        if not 'unit_distribution' in fit_params:
+            raise Exception('You must put unit_distribution parameter')
+        assert isinstance(fit_params['unit_distribution'], (list, ndarray))
         self.__check_matrix_form(X)
 
-        n_docs_distribution = fit_params['n_docs_distribution']
+        unit_distribution = fit_params['unit_distribution']
 
         if 'n_jobs' in fit_params:
             n_jobs = fit_params['n_jobs']
@@ -64,7 +64,7 @@ class BNS(TransformerMixin):
                 feature_index=feature_index,
                 sample_index=sample_index,
                 true_index=true_index,
-                n_docs_distribution=n_docs_distribution,
+                unit_distribution=unit_distribution,
                 verbose=verbose
             )
             for sample_index in sample_range
@@ -83,7 +83,7 @@ class BNS(TransformerMixin):
 
         return bns_featured_csr_matrix
 
-    def docId_word_BNS(self, X, feature_index, sample_index, n_docs_distribution, true_index, verbose=False):
+    def docId_word_BNS(self, X, feature_index, sample_index, unit_distribution, true_index, verbose=False):
 
         assert isinstance(X, csr_matrix)
         assert isinstance(feature_index, int)
@@ -94,12 +94,12 @@ class BNS(TransformerMixin):
             feature_index=feature_index,
             sample_index=sample_index,
             true_index=true_index,
-            n_docs_distribution=n_docs_distribution,
+            unit_distribution=unit_distribution,
             verbose=verbose
         )
         return sample_index, feature_index, bns_score
 
-    def bns(self, X, feature_index, sample_index, n_docs_distribution, true_index=0, verbose=False):
+    def bns(self, X, feature_index, sample_index, unit_distribution, true_index=0, verbose=False):
         if true_index==0:
             false_index = 1
         elif true_index==1:
@@ -112,14 +112,14 @@ class BNS(TransformerMixin):
         tp = X[true_index, feature_index]
         # trueラベルで出現しなかった回数
         # fp is frequency of NON-features(expect specified feature) in the specified positive label
-        fp = n_docs_distribution[true_index] - tp
+        fp = unit_distribution[true_index] - tp
 
         # negativeラベルで出現した回数
         # fn is frequency of features in the specified negative label
         fn = X[false_index, feature_index]
         # negativeラベルで出現しなかった回数
         # fp is frequency of NON-features(expect specified feature) in the specified negative label
-        tn = n_docs_distribution[false_index] - fn
+        tn = unit_distribution[false_index] - fn
 
         if tn < 0.0:
             print('aaaa')

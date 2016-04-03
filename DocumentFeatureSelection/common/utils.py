@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from collections import Iterable
 from scipy.sparse.csr import csr_matrix
-from numpy import ndarray
+from numpy import ndarray, int32, int64
 import logging
 import collections
 import joblib
@@ -42,33 +42,37 @@ def extract_from_csr_matrix(weight_csr_matrix, vocabulary, label_id, row_id, col
     assert isinstance(label_id, dict)
 
 
-def __get_value_index(row_col_tuple, value_list, col_index, row_pointer):
-    assert isinstance(row_col_tuple, tuple)
-    assert isinstance(value_list, ndarray)
-    assert isinstance(col_index, ndarray)
-    assert isinstance(row_pointer, ndarray)
-    value = value_list[row_pointer[row_col_tuple[0]] + col_index[row_col_tuple[1]]]
-    assert value != 0
+def __get_value_index(row_index, column_index, weight_csr_matrix, verbose=False):
+    assert isinstance(row_index, (int, int32))
+    assert isinstance(column_index, (int, int32))
+    assert isinstance(weight_csr_matrix, csr_matrix)
+
+    value = weight_csr_matrix[row_index, column_index]
+
     return value
 
 
 def make_non_zero_information(weight_csr_matrix):
-    assert isinstance(weight_csr_matrix, csr_matrix)
-    values = weight_csr_matrix.data
-    col_index = weight_csr_matrix.indices
-    row_pointer = weight_csr_matrix.indptr
+    """Construct Tuple of matrix value. Return value is array of ROW_COL_VAL namedtuple.
 
-    indices = zip(*weight_csr_matrix.nonzero())
+    :param weight_csr_matrix:
+    :return:
+    """
+    assert isinstance(weight_csr_matrix, csr_matrix)
+
+    row_col_index_array = weight_csr_matrix.nonzero()
+    row_indexes = row_col_index_array[0]
+    column_indexes = row_col_index_array[1]
+    assert len(row_indexes) == len(column_indexes)
 
     value_index_items = [
         ROW_COL_VAL(
-            row_index_tuple[0],
-            row_index_tuple[1],
-            __get_value_index(row_index_tuple, values, col_index, row_pointer)
+            row_indexes[i],
+            column_indexes[i],
+            __get_value_index(row_indexes[i], column_indexes[i], weight_csr_matrix)
         )
-        for row_index_tuple
-        in indices
-    ]
+        for i
+        in range(0, len(row_indexes))]
 
     return value_index_items
 

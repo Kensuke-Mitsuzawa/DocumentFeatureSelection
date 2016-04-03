@@ -41,7 +41,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    test_suite='test.all_tests.suite',
+    test_suite='tests.all_tests.suite',
     install_requires=install_requires,
     setup_requires=['six', 'setuptools>=1.0'],
     classifiers=[],

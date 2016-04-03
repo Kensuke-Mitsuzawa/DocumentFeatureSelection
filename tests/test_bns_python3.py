@@ -35,7 +35,7 @@ class TestBnsPython3(unittest.TestCase):
         vocabulary = data_csr_matrix.vocabulary
 
         bns_score_csr_matrix = bns_python3.BNS().fit_transform(X=csr_matrix_, y=None,
-                                        n_docs_distribution=n_docs_distribution,
+                                        unit_distribution=n_docs_distribution,
                                         verbose=True)
         assert isinstance(bns_score_csr_matrix, csr_matrix)
 
@@ -82,7 +82,7 @@ class TestBnsPython3(unittest.TestCase):
         vocabulary = data_csr_matrix.vocabulary
 
         try:
-            bns_python3.BNS().fit_transform(X=csr_matrix_, y=None, n_docs_distribution=n_docs_distribution)
+            bns_python3.BNS().fit_transform(X=csr_matrix_, y=None, unit_distribution=n_docs_distribution)
         except Exception:
             pass
 
