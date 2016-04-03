@@ -1,5 +1,5 @@
-from document_feature_selection.soa import soa_python3
-from document_feature_selection.common import data_converter_python3
+from DocumentFeatureSelection.soa import soa_python3
+from DocumentFeatureSelection.common import data_converter_python3
 import unittest
 
 
@@ -39,7 +39,8 @@ class TestSoaPython3(unittest.TestCase):
 
         scored_matrix_term_freq = soa_python3.SOA().fit_transform(
             X=csr_matrix_,
-            n_docs_distribution=n_docs_distribution
+            n_docs_distribution=n_docs_distribution,
+            verbose=True
         )
 
         soa_scores_term_freq = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
@@ -51,7 +52,6 @@ class TestSoaPython3(unittest.TestCase):
         import pprint
         print('term freq based soa')
         pprint.pprint(soa_scores_term_freq)
-
 
     def test_soa_doc_freq(self):
         data_csr_matrix = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
@@ -67,7 +67,8 @@ class TestSoaPython3(unittest.TestCase):
 
         scored_matrix_doc_freq = soa_python3.SOA().fit_transform(
             X=csr_matrix_,
-            n_docs_distribution=n_docs_distribution
+            n_docs_distribution=n_docs_distribution,
+            verbose=True
         )
 
         soa_scores_doc_freq = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
@@ -79,7 +80,6 @@ class TestSoaPython3(unittest.TestCase):
         import pprint
         print('doc freq based soa')
         pprint.pprint(soa_scores_doc_freq)
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,4 @@
-document-feature-selection
+DocumentFeatureSelection
 ==========================
 
 # what's this?
@@ -22,6 +22,7 @@ Currently, this package supports following feature selection methods
 * TF-IDF
 * Pointwise mutual information (PMI)
 * Strength of Association (SOA)
+* Bi-Normal Separation (BNS)
 
 ## Contribution of this package
 
@@ -70,6 +71,25 @@ Where
 * freq(e) is the number of units having the label _e_
 * freq(¬e) is the number of units having NOT the label _e_
 
+## BNS
+
+BNS is a feature selection method for binary class data.
+There is several methods available for binary class data, such as _information gain (IG)_, _chi-squared
+(CHI)_, _odds ratio (Odds)_.
+ 
+The problem is when you execute your feature selection on skewed data.
+These methods are weak for such skewed data, however, _BNS_ is feasible only for skewed data.
+The following paper shows how BNS is feasible for skewed data.
+
+```Lei Tang and Huan Liu, "Bias Analysis in Text Classification for Highly Skewed Data", 2005```
+
+or 
+
+```George Forman, "An Extensive Empirical Study of Feature Selection Metrics for Text Classification",Journal of Machine Learning Research 3 (2003) 1289-1305```
+ 
+ 
+
+
 
 # Requirement
 
@@ -97,3 +117,7 @@ supports PMI and TF-IDF under Python3.x
 ## 0.7 2016/04/03
 
 Added SOA under Python3.x
+
+## 0.8 2016/04/03
+
+Added BNS under Python3.x

@@ -3,13 +3,13 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from document_feature_selection.common import utils
+from DocumentFeatureSelection.common import utils
 from collections import namedtuple
 from logging import getLogger, StreamHandler
 from scipy.sparse import csr_matrix
-from document_feature_selection.common import crs_matrix_constructor
-from document_feature_selection.common import labeledMultiDocs2labeledDocsSet
-from document_feature_selection.common import ngram_constructor
+from DocumentFeatureSelection.common import crs_matrix_constructor
+from DocumentFeatureSelection.common import labeledMultiDocs2labeledDocsSet
+from DocumentFeatureSelection.common import ngram_constructor
 import logging
 import sys
 

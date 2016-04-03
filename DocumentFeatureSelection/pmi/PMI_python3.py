@@ -26,15 +26,15 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, n_docs_distribution, n_jobs=1):
+    def fit_transform(self, X, n_docs_distribution, n_jobs=1, verbose=False):
         """Main method of PMI class.
         """
         assert isinstance(X, csr_matrix)
         assert isinstance(n_docs_distribution, list)
 
         matrix_size = X.shape
-        sample_range = list(range(0, matrix_size[0]-1))
-        feature_range = list(range(0, matrix_size[1]-1))
+        sample_range = list(range(0, matrix_size[0]))
+        feature_range = list(range(0, matrix_size[1]))
         n_total_document = sum(n_docs_distribution)
 
         logger.debug(msg='Start calculating PMI with n(process)={}'.format(n_jobs))
@@ -46,7 +46,8 @@ class PMI(object):
                 n_docs_distribution=n_docs_distribution,
                 feature_index=feature_index,
                 sample_index=sample_index,
-                n_total_doc=n_total_document
+                n_total_doc=n_total_document,
+                verbose=verbose
             )
             for sample_index in sample_range
             for feature_index in feature_range
@@ -64,7 +65,7 @@ class PMI(object):
 
         return pmi_featured_csr_matrix
 
-    def docId_word_PMI(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index):
+    def docId_word_PMI(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index, verbose=False):
         """Calculate PMI score for fit_format()
 
         :param X:
@@ -84,11 +85,12 @@ class PMI(object):
             n_docs_distribution=n_docs_distribution,
             feature_index=feature_index,
             sample_index=sample_index,
-            n_total_doc=n_total_doc
+            n_total_doc=n_total_doc,
+            verbose=verbose
         )
         return sample_index, feature_index, pmi_score
 
-    def pmi(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index):
+    def pmi(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index, verbose=False):
         """get PMI score for given feature & sample index
 
         :param X:
@@ -112,6 +114,15 @@ class PMI(object):
         n_10 = X[sample_indexes, feature_index].sum()
         # n_00 is #docs NOT having feature in NOT specified index(indexes except specified index)
         n_00 = n_total_doc - (n_10 + n_docs_distribution[sample_index])
+
+        if verbose:
+            logging.debug('For feature_index:{} sample_index:{}'.format(feature_index, sample_index))
+            logging.debug('n_11:{} n_01:{} n_10:{} n_00:{}'.format(
+                n_11,
+                n_01,
+                n_10,
+                n_00
+            ))
 
         if n_11 == 0.0 or n_10 == 0.0 or n_01 == 0.0 or n_00 == 0.0:
             return 0

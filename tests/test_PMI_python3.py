@@ -1,7 +1,7 @@
 import unittest
-from document_feature_selection.common import data_converter_python3
-from document_feature_selection.common.data_converter_python3 import DataCsrMatrix
-from document_feature_selection.pmi import PMI_python3
+from DocumentFeatureSelection.common import data_converter_python3
+from DocumentFeatureSelection.common.data_converter_python3 import DataCsrMatrix
+from DocumentFeatureSelection.pmi import PMI_python3
 from scipy.sparse import csr_matrix
 
 
@@ -52,7 +52,8 @@ class TestPmiPython3(unittest.TestCase):
         scored_matrix = pmi_object.fit_transform(
             X=self.csr_matrix_,
             n_jobs=5,
-            n_docs_distribution=self.n_docs_distribution
+            n_docs_distribution=self.n_docs_distribution,
+            verbose=True
         )
         assert isinstance(scored_matrix, csr_matrix)
 
@@ -76,8 +77,6 @@ class TestPmiPython3(unittest.TestCase):
         assert isinstance(pmi_scored_dict, list)
         import pprint
         pprint.pprint(pmi_scored_dict)
-
-
 
 if __name__ == '__main__':
     unittest.main()

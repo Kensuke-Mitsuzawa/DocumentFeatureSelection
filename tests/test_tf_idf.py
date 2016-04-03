@@ -4,9 +4,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from scipy.sparse import csr_matrix
-from document_feature_selection.common import data_converter_python3
-from document_feature_selection.common.data_converter_python3 import DataCsrMatrix
-from document_feature_selection.tf_idf import tf_idf
+from DocumentFeatureSelection.common import data_converter_python3
+from DocumentFeatureSelection.common.data_converter_python3 import DataCsrMatrix
+from DocumentFeatureSelection.tf_idf import tf_idf
 import logging
 import unittest
 logging.basicConfig(level=logging.DEBUG)

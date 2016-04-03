@@ -1,6 +1,6 @@
-from document_feature_selection.common import data_converter_python3
-from document_feature_selection.common.data_converter_python3 import DataCsrMatrix
-from document_feature_selection.pmi import PMI_python3
+from DocumentFeatureSelection.common import data_converter_python3
+from DocumentFeatureSelection.common.data_converter_python3 import DataCsrMatrix
+from DocumentFeatureSelection.pmi import PMI_python3
 from scipy.sparse import csr_matrix
 import unittest
 import numpy

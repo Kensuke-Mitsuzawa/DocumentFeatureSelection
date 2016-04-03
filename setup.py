@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '0.7'
+__version__ = '0.8'
 
 import sys
 from setuptools import setup, find_packages
@@ -30,7 +30,7 @@ classifiers = [
         ]
 
 setup(
-    name='document-feature-selection',
+    name='DocumentFeatureSelection',
     version=__version__,
     description='No description yet.',
     long_description=long_description,

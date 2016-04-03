@@ -7,6 +7,6 @@ import sys
 python_version = sys.version_info
 
 if python_version > (3, 0, 0):
-    from document_feature_selection.soa.soa_python3 import SOA
+    from DocumentFeatureSelection.common.data_converter_python3 import DataConverter, DataCsrMatrix
 else:
     raise SystemError('Not Implemented yet')

@@ -1,6 +1,6 @@
 from collections import namedtuple
 from collections import Counter
-from document_feature_selection.common import utils
+from DocumentFeatureSelection.common import utils
 
 SetDocumentInformation = namedtuple('SetDocumentInformation',
                                     ('feature_frequency', 'label2id_dict', 'vocaburary2id_dict'))

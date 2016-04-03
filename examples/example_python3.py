@@ -1,7 +1,7 @@
 #! -*- coding: utf-8 -*-
 __author__ = 'kensuke-mi'
 
-from document_feature_selection import PMI, TFIDF, DataConverter, DataCsrMatrix, SOA
+from DocumentFeatureSelection import PMI, TFIDF, DataConverter, DataCsrMatrix, SOA
 from scipy.sparse.csr import csr_matrix
 import logging
 logger = logging.Logger(level=logging.DEBUG, name='test')

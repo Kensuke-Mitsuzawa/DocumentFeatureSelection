@@ -7,6 +7,6 @@ import sys
 python_version = sys.version_info
 
 if python_version > (3, 0, 0):
-    from document_feature_selection.pmi.PMI_python3 import PMI
+    from DocumentFeatureSelection.soa.soa_python3 import SOA
 else:
     raise SystemError('Not Implemented yet')
