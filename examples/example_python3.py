@@ -166,7 +166,7 @@ assert isinstance(doc_freq_with_2labels_information, DataCsrMatrix)
 true_class_index = doc_freq_with_2labels_information.label2id_dict['positive']
 bns_scored_csr_matrix = BNS().fit_transform(
     X=doc_freq_with_2labels_information.csr_matrix_,
-    distribution=doc_freq_with_2labels_information.n_term_freq_distribution,
+    unit_distribution=doc_freq_with_2labels_information.n_term_freq_distribution,
     n_jobs=5,
     true_index=true_class_index
 )
