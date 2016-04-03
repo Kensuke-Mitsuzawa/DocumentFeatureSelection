@@ -1,3 +1,5 @@
-recursive-include document-feature-selection *
-exclude .git .svn
-include LICENSE README.md
+include README.md
+include LICENSE
+include examples
+include tests
+include DocumentFeatureSelection
