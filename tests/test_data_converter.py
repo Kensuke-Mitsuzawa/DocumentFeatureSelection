@@ -145,7 +145,7 @@ class TestDataConverter(unittest.TestCase):
 
         csr_matrix_, label_group_dict, vocabulary, n_doc_distri, n_term_distir = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
+            ngram=3,
             n_jobs=5
         )
 

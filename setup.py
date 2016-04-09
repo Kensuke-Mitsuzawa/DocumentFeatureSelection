@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '0.8b'
+__version__ = '0.9'
 
 import sys
 from setuptools import setup, find_packages
@@ -11,14 +11,20 @@ from setuptools import setup, find_packages
 python_version = sys.version_info
 
 if python_version >= (3, 0, 0):
-    install_requires = ['six', 'setuptools>=1.0', 'joblib', 'scipy', 'nltk', 'scikit-learn', 'numpy']
+    install_requires = ['six', 'setuptools>=1.0', 'joblib', 'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc']
 
+"""
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
 except(IOError, ImportError):
-    long_description = open('README.md').read()
+    long_description = open('README.md').read()"""
 
+import pypandoc
+long_description = pypandoc.convert('README.md', 'rst')
+long_description = long_description.replace("\r","") # Do not forget this line
+
+description = 'Various methods of feature selection from Text Data'
 
 classifiers = [
         "Development Status :: 5 - Production/Stable",
@@ -32,12 +38,12 @@ classifiers = [
 setup(
     name='DocumentFeatureSelection',
     version=__version__,
-    description='No description yet.',
+    description=description,
     long_description=long_description,
     author=__author__,
     author_email='kensuke.mit@gmail.com',
     license='CeCILL-B',
-    url='',
+    url='https://github.com/Kensuke-Mitsuzawa/DocumentFeatureSelection',
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,

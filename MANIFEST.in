@@ -1,5 +1,5 @@
 include README.md
 include LICENSE
-include examples
-include tests
-include DocumentFeatureSelection
+recursive-include examples *
+recursive-include tests *
+recursive-include DocumentFeatureSelection *

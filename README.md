@@ -3,7 +3,7 @@ DocumentFeatureSelection
 
 # what's this?
 
-This is set of feature extraction(a.k.a feature selection) codes from text data.
+This is set of feature selection codes from text data.
 (About feature selection, see [here](http://nlp.stanford.edu/IR-book/html/htmledition/feature-selection-1.html) or [here](http://stackoverflow.com/questions/13603882/feature-selection-and-reduction-for-text-classification))
 
 The Feature selection is really important when you use machine learning metrics on natural language data.
@@ -13,6 +13,11 @@ The natural language data usually contains a lot of noise information, thus mach
 The feature selection is also useful when you observe your text data.
 With the feature selection, you can get to know which features really contribute to specific labels.
 
+Please visit [project page on github](https://github.com/Kensuke-Mitsuzawa/DocumentFeatureSelection).
+
+If you find any bugs and you report it to github issue, I'm glad.
+
+Any pull-requests are welcomed.
 
 ## Supporting methods
 
@@ -60,7 +65,7 @@ In this package, SOA formula is from following paper,
 
 `Saif Mohammad and Svetlana Kiritchenko, "Using Hashtags to Capture Fine Emotion Categories from Tweets", Computational Intelligence, 01/2014; 31(2).`
 
-```math
+```
 SOA(w, e)\ =\ log_2\frac{freq(w, e) * freq(\neg{e})}{freq(e) * freq(w, \neg{e})}
 ```
 
@@ -121,3 +126,7 @@ Added SOA under Python3.x
 ## 0.8 2016/04/03
 
 Added BNS under Python3.x
+
+## 0.9 2016/04/10
+
+Removed a bug when calling n_gram method of DataConverter

@@ -14,7 +14,7 @@ logger.addHandler(handler)
 python_version = sys.version_info
 
 
-def SUB_FUNC_ngram_data_conversion(self, key, docs, n, joiner_string='_'):
+def SUB_FUNC_ngram_data_conversion(key, docs, n, joiner_string='_'):
     """This function converts list of tokens into list of n_grams tokens
 
     :param key: key name of document
@@ -52,7 +52,8 @@ def ngram_constructor(labeled_documents, ngram, n_jobs):
         joblib.delayed(SUB_FUNC_ngram_data_conversion)(
             key=key,
             docs=docs,
-            n=ngram
+            n=ngram,
+            joiner_string='_'
         )
         for key, docs in labeled_documents.items()
     )
