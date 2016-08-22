@@ -3,14 +3,15 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from collections import Iterable
 from scipy.sparse.csr import csr_matrix
 from numpy import ndarray, int32, int64
+from DocumentFeatureSelection import init_logger
 import logging
 import collections
 import joblib
 import sys
 python_version = sys.version_info
+logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
 __author__ = 'kensuke-mi'
 
@@ -19,7 +20,7 @@ ROW_COL_VAL = collections.namedtuple('ROW_COL_VAL', 'row col val')
 
 def flatten(lis):
      for item in lis:
-         if isinstance(item, Iterable) and not isinstance(item, str):
+         if isinstance(item, list) and not isinstance(item, str):
              for x in flatten(item):
                  yield x
          else:
@@ -112,7 +113,7 @@ def SUB_FUNC_feature_extraction(row_col_val_tuple, id2label, id2vocab):
     }
 
 
-def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, logger, n_jobs=1):
+def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, n_jobs=1):
     """Get dictionary structure of PMI featured scores.
 
     You can choose 'dict' or 'items' for ```outformat``` parameter.

@@ -18,15 +18,18 @@ __author__ = 'kensuke-mi'
 PosTuple = namedtuple('PosTuple', ('doc_id', 'word_id', 'document_frequency'))
 
 
-def get_data_col_row_values(doc_id, word, doc_freq, vocaburary):
+def get_data_col_row_values(doc_id:int, word:int, doc_freq:int, vocaburary):
     assert isinstance(vocaburary, dict)
-    col_value = vocaburary[word]
+    try:
+        col_value = vocaburary[word]
+    except KeyError:
+        print()
     # df value is word frequency in documents
     df_value = doc_freq
 
     return PosTuple(doc_id, col_value, df_value)
 
-def SUB_FUNC_make_value_pairs(doc_id, doc_freq_obj, vocabulary):
+def SUB_FUNC_make_value_pairs(doc_id:int, doc_freq_obj, vocabulary):
     value_pairs = [
         get_data_col_row_values(doc_id=doc_id, word=word, doc_freq=freq, vocaburary=vocabulary)
         for word, freq

@@ -1,5 +1,5 @@
-from DocumentFeatureSelection.common import data_converter_python3
-from DocumentFeatureSelection.common.data_converter_python3 import DataCsrMatrix
+from DocumentFeatureSelection.common import data_converter
+from DocumentFeatureSelection.common.data_converter import DataCsrMatrix
 from DocumentFeatureSelection.pmi import PMI_python3
 from scipy.sparse import csr_matrix
 import unittest
@@ -29,46 +29,50 @@ class TestDataConverter(unittest.TestCase):
             ]
         }
 
-    def test_labeledMultiDocs2TermFreqMatrix(self):
-        """
-
-        :return:
-        """
-
-
-
 
     def test_check_same_csr_matrix(self):
         """複数回の変換を実施して、同一のcsr_matrixになることを確認する
         """
         n_joblib_tasks = 2
 
-        data_csr_matrix1 = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix1 = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix1, DataCsrMatrix)
-        csr_matrix_1, label_group_dict_1, vocabulary_1, n_doc_distri_1, n_term_distir_1 = data_csr_matrix1
+        csr_matrix_1 = data_csr_matrix1.csr_matrix_
+        label_group_dict_1 = data_csr_matrix1.label2id_dict
+        vocabulary_1 = data_csr_matrix1.vocabulary
+        n_doc_distri_1 = data_csr_matrix1.n_docs_distribution
+        n_term_distir_1 = data_csr_matrix1.n_term_freq_distribution
         dense_matrix_1 = csr_matrix_1.toarray()
 
-        data_csr_matrix2 = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix2 = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix2, DataCsrMatrix)
-        csr_matrix_2, label_group_dict_2, vocabulary_2, n_doc_distri_2, n_term_distir_2 = data_csr_matrix2
-        dense_matrix_2 = csr_matrix_2.toarray()
+        csr_matrix_2 = data_csr_matrix2.csr_matrix_
+        label_group_dict_2 = data_csr_matrix2.label2id_dict
+        vocabulary_2 = data_csr_matrix2.vocabulary
+        n_doc_distri_2 = data_csr_matrix2.n_docs_distribution
+        n_term_distir_2 = data_csr_matrix2.n_term_freq_distribution
+        dense_matrix_2 = data_csr_matrix2.csr_matrix_.toarray()
 
-        data_csr_matrix3 = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix3 = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix3, DataCsrMatrix)
-        csr_matrix_3, label_group_dict_3, vocabulary_3, n_doc_distri_3, n_term_distir_3 = data_csr_matrix3
-        dense_matrix_3 = csr_matrix_3.toarray()
+        csr_matrix_3 = data_csr_matrix3.csr_matrix_
+        label_group_dict_3 = data_csr_matrix3.label2id_dict
+        vocabulary_3 = data_csr_matrix3.vocabulary
+        n_doc_distri_3 = data_csr_matrix3.n_docs_distribution
+        n_term_distir_3 = data_csr_matrix3.n_term_freq_distribution
+        dense_matrix_3 = data_csr_matrix3.csr_matrix_.toarray()
 
         assert numpy.array_equal(dense_matrix_1, dense_matrix_2)
         assert numpy.array_equal(dense_matrix_2, dense_matrix_3)
@@ -88,7 +92,7 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_information = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        csr_matrix_information = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
@@ -127,15 +131,15 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary, n_doc_distri, n_term_distir = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_object = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
         )
 
-        assert isinstance(csr_matrix_, csr_matrix)
-        assert isinstance(label_group_dict, dict)
-        assert isinstance(vocabulary, dict)
+        assert isinstance(data_csr_object.csr_matrix_, csr_matrix)
+        assert isinstance(data_csr_object.label2id_dict, dict)
+        assert isinstance(data_csr_object.vocabulary, dict)
 
     def test_n_gram_multi_process_convert_data(self):
         """checks if it works or not when n_process is more than 1, and 3-gram
@@ -143,15 +147,15 @@ class TestDataConverter(unittest.TestCase):
         :return:
         """
 
-        csr_matrix_, label_group_dict, vocabulary, n_doc_distri, n_term_distir = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_object = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=3,
             n_jobs=5
         )
 
-        assert isinstance(csr_matrix_, csr_matrix)
-        assert isinstance(label_group_dict, dict)
-        assert isinstance(vocabulary, dict)
+        assert isinstance(data_csr_object.csr_matrix_, csr_matrix)
+        assert isinstance(data_csr_object.label2id_dict, dict)
+        assert isinstance(data_csr_object.vocabulary, dict)
 
 
     def test_get_pmi_feature_dictionary(self):
@@ -159,24 +163,24 @@ class TestDataConverter(unittest.TestCase):
 
         :return:
         """
-        csr_matrix_, label_group_dict, vocabulary, n_doc_distri, n_term_distir = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_object = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
         )
 
-        assert isinstance(csr_matrix_, csr_matrix)
-        assert isinstance(label_group_dict, dict)
-        assert isinstance(vocabulary, dict)
+        assert isinstance(data_csr_object.csr_matrix_, csr_matrix)
+        assert isinstance(data_csr_object.label2id_dict, dict)
+        assert isinstance(data_csr_object.vocabulary, dict)
 
-        pmi_scored_matrix = PMI_python3.PMI().fit_transform(X=csr_matrix_, n_jobs=5, n_docs_distribution=n_doc_distri)
+        pmi_scored_matrix = PMI_python3.PMI().fit_transform(X=data_csr_object.csr_matrix_, n_jobs=5, n_docs_distribution=data_csr_object.n_docs_distribution)
 
         # main part of test
         # when sort is True, cut_zero is True, outformat is dict
-        pmi_scored_dictionary_objects = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
+        pmi_scored_dictionary_objects = data_converter.ScoreMatrix2ScoreDictionary(
             scored_matrix=pmi_scored_matrix,
-            label2id_dict=label_group_dict,
-            vocaburary2id_dict=vocabulary,
+            label2id_dict=data_csr_object.label2id_dict,
+            feature2id_dict=data_csr_object.vocabulary,
             outformat='dict',
             sort_desc=True,
             n_jobs=5
@@ -185,10 +189,10 @@ class TestDataConverter(unittest.TestCase):
         logging.debug(pmi_scored_dictionary_objects)
 
         # when sort is True, cut_zero is True, outformat is items
-        pmi_scored_dictionary_objects = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
+        pmi_scored_dictionary_objects = data_converter.ScoreMatrix2ScoreDictionary(
             scored_matrix=pmi_scored_matrix,
-            label2id_dict=label_group_dict,
-            vocaburary2id_dict=vocabulary,
+            label2id_dict=data_csr_object.label2id_dict,
+            feature2id_dict=data_csr_object.vocabulary,
             outformat='items',
             sort_desc=True,
             n_jobs=5
@@ -198,10 +202,10 @@ class TestDataConverter(unittest.TestCase):
         logging.debug(pmi_scored_dictionary_objects)
 
         # when sort is True, cut_zero is False, outformat is dict
-        pmi_scored_dictionary_objects = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
+        pmi_scored_dictionary_objects = data_converter.ScoreMatrix2ScoreDictionary(
             scored_matrix=pmi_scored_matrix,
-            label2id_dict=label_group_dict,
-            vocaburary2id_dict=vocabulary,
+            label2id_dict=data_csr_object.label2id_dict,
+            feature2id_dict=data_csr_object.vocabulary,
             outformat='dict',
             sort_desc=True,
             n_jobs=5
@@ -210,10 +214,10 @@ class TestDataConverter(unittest.TestCase):
         logging.debug(pmi_scored_dictionary_objects)
 
         # when sort is True, cut_zero is False, outformat is items
-        pmi_scored_dictionary_objects = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
+        pmi_scored_dictionary_objects = data_converter.ScoreMatrix2ScoreDictionary(
             scored_matrix=pmi_scored_matrix,
-            label2id_dict=label_group_dict,
-            vocaburary2id_dict=vocabulary,
+            label2id_dict=data_csr_object.label2id_dict,
+            feature2id_dict=data_csr_object.vocabulary,
             outformat='items',
             sort_desc=True,
             n_jobs=5

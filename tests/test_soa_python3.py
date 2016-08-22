@@ -1,5 +1,5 @@
 from DocumentFeatureSelection.soa import soa_python3
-from DocumentFeatureSelection.common import data_converter_python3
+from DocumentFeatureSelection.common import data_converter
 import unittest
 
 
@@ -26,12 +26,12 @@ class TestSoaPython3(unittest.TestCase):
         }
 
     def test_soa_with_term_freq(self):
-        data_csr_matrix = data_converter_python3.DataConverter().labeledMultiDocs2TermFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
         )
-        assert isinstance(data_csr_matrix, data_converter_python3.DataCsrMatrix)
+        assert isinstance(data_csr_matrix, data_converter.DataCsrMatrix)
         label2id_dict = data_csr_matrix.label2id_dict
         csr_matrix_ = data_csr_matrix.csr_matrix_
         n_docs_distribution = data_csr_matrix.n_docs_distribution
@@ -43,10 +43,10 @@ class TestSoaPython3(unittest.TestCase):
             verbose=True
         )
 
-        soa_scores_term_freq = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
+        soa_scores_term_freq = data_converter.ScoreMatrix2ScoreDictionary(
             scored_matrix=scored_matrix_term_freq,
             label2id_dict=label2id_dict,
-            vocaburary2id_dict=vocabulary
+            feature2id_dict=vocabulary
         )
 
         import pprint
@@ -54,12 +54,12 @@ class TestSoaPython3(unittest.TestCase):
         pprint.pprint(soa_scores_term_freq)
 
     def test_soa_doc_freq(self):
-        data_csr_matrix = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
             ngram=1,
             n_jobs=5
         )
-        assert isinstance(data_csr_matrix, data_converter_python3.DataCsrMatrix)
+        assert isinstance(data_csr_matrix, data_converter.DataCsrMatrix)
         label2id_dict = data_csr_matrix.label2id_dict
         csr_matrix_ = data_csr_matrix.csr_matrix_
         n_docs_distribution = data_csr_matrix.n_docs_distribution
@@ -71,10 +71,10 @@ class TestSoaPython3(unittest.TestCase):
             verbose=True
         )
 
-        soa_scores_doc_freq = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
+        soa_scores_doc_freq = data_converter.ScoreMatrix2ScoreDictionary(
             scored_matrix=scored_matrix_doc_freq,
             label2id_dict=label2id_dict,
-            vocaburary2id_dict=vocabulary
+            feature2id_dict=vocabulary
         )
 
         import pprint

@@ -4,8 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from scipy.sparse import csr_matrix
-from DocumentFeatureSelection.common import data_converter_python3
-from DocumentFeatureSelection.common.data_converter_python3 import DataCsrMatrix
+from DocumentFeatureSelection.common import data_converter
+from DocumentFeatureSelection.common.data_converter import DataCsrMatrix
 from DocumentFeatureSelection.tf_idf import tf_idf
 import logging
 import unittest
@@ -36,7 +36,7 @@ class TestTfIdf(unittest.TestCase):
             ]
         }
 
-        data_csr_matrix = data_converter_python3.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=input_dict,
             ngram=1,
             n_jobs=5
@@ -62,10 +62,10 @@ class TestTfIdf(unittest.TestCase):
         )
         assert isinstance(tf_idf_weighted_matrix, csr_matrix)
 
-        tf_idf_scored_dict = data_converter_python3.DataConverter().ScoreMatrix2ScoreDictionary(
+        tf_idf_scored_dict = data_converter.ScoreMatrix2ScoreDictionary(
             scored_matrix=tf_idf_weighted_matrix,
             label2id_dict=self.label2id_dict,
-            vocaburary2id_dict=self.vocabulary,
+            feature2id_dict=self.vocabulary,
             outformat='items',
             n_jobs=1
         )

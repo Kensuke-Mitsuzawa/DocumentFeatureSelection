@@ -64,4 +64,5 @@ target/
 # custom
 envs/
 package/
+.python-version
 

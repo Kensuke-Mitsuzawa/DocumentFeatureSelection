@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '0.9'
+__version__ = '1.0'
 
 import sys
 from setuptools import setup, find_packages
@@ -11,18 +11,16 @@ from setuptools import setup, find_packages
 python_version = sys.version_info
 
 if python_version >= (3, 0, 0):
-    install_requires = ['six', 'setuptools>=1.0', 'joblib', 'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc']
+    install_requires = ['six', 'setuptools>=1.0', 'joblib',
+                        'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc']
 
-"""
+
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
 except(IOError, ImportError):
-    long_description = open('README.md').read()"""
+    long_description = open('README.md').read()
 
-import pypandoc
-long_description = pypandoc.convert('README.md', 'rst')
-long_description = long_description.replace("\r","") # Do not forget this line
 
 description = 'Various methods of feature selection from Text Data'
 
