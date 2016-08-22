@@ -130,3 +130,8 @@ Added BNS under Python3.x
 ## 0.9 2016/04/10
 
 Removed a bug when calling n_gram method of DataConverter
+
+## 1.0 2016/08/22
+
+* Refactored some modules. (I changed some module names. Sorry if you have problems...) 
+* Added interface script
