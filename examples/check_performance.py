@@ -11,12 +11,12 @@ logger.level = logging.DEBUG
 
 #@profile
 def pmi_with_parallel(input_corpus):
-    logging.debug(msg='With Parallel backend')
+    logging.debug(msg='With multiprocessing backend')
     scored_matrix_obj = interface.run_feature_selection(
         input_dict=input_corpus,
         method='pmi',
         n_jobs=-1,
-        joblib_backend='Parallel'
+        joblib_backend='multiprocessing'
     )
 
 

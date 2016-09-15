@@ -16,7 +16,7 @@ python_version = sys.version_info
 __author__ = 'kensuke-mi'
 
 PosTuple = namedtuple('PosTuple', ('doc_id', 'word_id', 'document_frequency'))
-PARAM_JOBLIB_BACKEND = ['Parallel', 'threading']
+PARAM_JOBLIB_BACKEND = ['multiprocessing', 'threading']
 
 def get_data_col_row_values(doc_id:int, word:int, doc_freq:int, vocaburary):
     assert isinstance(vocaburary, dict)

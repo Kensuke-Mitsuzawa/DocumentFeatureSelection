@@ -133,7 +133,7 @@ class DataConverter(object):
         if joblib_backend == 'auto' and len(set_document_information.feature_frequency) >= 100000:
             joblib_backend = 'threading'
         if joblib_backend == 'auto' and len(set_document_information.feature_frequency) < 100000:
-            joblib_backend = 'Parallel'
+            joblib_backend = 'multiprocessing'
 
         # make set of tuples to construct csr_matrix
         row, col, data = crs_matrix_constructor.preprocess_csr_matrix(
@@ -225,13 +225,15 @@ class DataConverter(object):
 
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
-        set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2DocFreqInfo(labeled_documents)
+        set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2DocFreqInfo(labeled_documents,
+                                                                                         n_jobs=n_jobs,
+                                                                                         joblib_backend=joblib_backend)
         assert isinstance(set_document_information, labeledMultiDocs2labeledDocsSet.SetDocumentInformation)
-        logger.info(msg='Get {} feature-dimension from your input data.'.format(len(set_document_information.feature_frequency)))
+        logger.info(msg='Get {} feature-dimension from your input data.'.format(len(set_document_information.feature2id_dict)))
         if joblib_backend == 'auto' and len(set_document_information.feature_frequency) >= 100000:
             joblib_backend = 'threading'
         if joblib_backend == 'auto' and len(set_document_information.feature_frequency) < 100000:
-            joblib_backend = 'Parallel'
+            joblib_backend = 'multiprocessing'
 
         # make set of tuples to construct csr_matrix
         row, col, data = crs_matrix_constructor.preprocess_csr_matrix(
