@@ -9,7 +9,7 @@ logger = logging.getLogger('sample usage')
 logger.level = logging.DEBUG
 
 
-#@profile
+@profile
 def pmi_with_parallel(input_corpus):
     logging.debug(msg='With multiprocessing backend')
     scored_matrix_obj = interface.run_feature_selection(
@@ -20,7 +20,7 @@ def pmi_with_parallel(input_corpus):
     )
 
 
-#@profile
+@profile
 def pmi_with_threading(input_corpus):
     logging.debug(msg='With threading backend')
     scored_matrix_obj = interface.run_feature_selection(
