@@ -16,6 +16,7 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
                           method:str,
                           ngram:int=1,
                           n_jobs:int=1,
+                          joblib_backend='auto',
                           matrix_form=None)->ScoredResultObject:
     if not method in METHOD_NAMES:
         raise Exception('method name must be either of {}. Yours: {}'.format(METHOD_NAMES, method))
@@ -26,7 +27,8 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
         matrix_data_object = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
             labeled_documents=input_dict,
             ngram=ngram,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
+            joblib_backend=joblib_backend
         )
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
@@ -37,7 +39,8 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
         matrix_data_object = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=input_dict,
             ngram=ngram,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
+            joblib_backend=joblib_backend
         )
         assert isinstance(matrix_data_object, DataCsrMatrix)
         if method == 'pmi':
