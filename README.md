@@ -148,3 +148,7 @@ Removed a bug when calling n_gram method of DataConverter
 
 * Resolved bottleneck point in pre-processing
 * Fixed a bug which n_jobs parameter does not work in interface
+
+## 1.2 2016/9/16
+
+* A bug in calculating TF-IDF score, this bug was resolved.
