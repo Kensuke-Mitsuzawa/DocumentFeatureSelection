@@ -26,7 +26,7 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, n_docs_distribution, n_jobs=1, verbose=False):
+    def fit_transform(self, X, n_docs_distribution, n_jobs=1, verbose=False, joblib_backend='multiprocessing'):
         """Main method of PMI class.
         """
         assert isinstance(X, csr_matrix)
@@ -40,7 +40,7 @@ class PMI(object):
         logger.debug(msg='Start calculating PMI with n(process)={}'.format(n_jobs))
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
 
-        pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs)(
+        pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
             joblib.delayed(self.docId_word_PMI)(
                 X=X,
                 n_docs_distribution=n_docs_distribution,

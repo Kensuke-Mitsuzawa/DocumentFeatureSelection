@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple, Any, Union
 import logging
 import joblib
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
+N_FEATURE_SWITCH_STRATEGY = 1000000
 
 def generate_document_dict(document_key:str,
                            documents:List[Union[List[str], Tuple[Any]]])->Tuple[str,Dict[str, int]]:
@@ -48,7 +49,7 @@ def multiDocs2TermFreqInfo(labeled_documents):
     document_index = 0
 
     for key, docs in sorted(labeled_documents.items(), key=lambda key_value_tuple: key_value_tuple[0]):
-        words_in_docs = utils.flatten(labeled_documents.values())
+        words_in_docs = utils.flatten(docs)
         feature_frequency.append(dict(Counter(words_in_docs)))
         label2id_dict.update({key: document_index})
         document_index += 1
@@ -98,9 +99,9 @@ def multiDocs2DocFreqInfo(labeled_documents:Dict[str, List[List[Union[str, Tuple
     # make list of document-frequency
     feature_frequency = []
 
-    if joblib_backend == 'auto' and len(feature2id_dict) >= 100000:
+    if joblib_backend == 'auto' and len(feature2id_dict) >= N_FEATURE_SWITCH_STRATEGY:
         joblib_backend = 'threading'
-    if joblib_backend == 'auto' and len(feature2id_dict) < 100000:
+    if joblib_backend == 'auto' and len(feature2id_dict) < N_FEATURE_SWITCH_STRATEGY:
         joblib_backend = 'multiprocessing'
 
     counted_frequency = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(

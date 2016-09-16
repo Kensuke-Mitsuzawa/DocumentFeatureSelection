@@ -18,7 +18,7 @@ class SOA(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, unit_distribution, n_jobs=1, verbose=False):
+    def fit_transform(self, X, unit_distribution, n_jobs=1, verbose=False, joblib_backend='multiprocessing'):
         assert isinstance(X, csr_matrix)
         assert isinstance(unit_distribution, list)
 
@@ -30,7 +30,7 @@ class SOA(object):
         logger.debug(msg='Start calculating SOA with n(process)={}'.format(n_jobs))
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
 
-        pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs)(
+        pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
             joblib.delayed(self.docId_word_soa)(
                 X=X,
                 unit_distribution=unit_distribution,

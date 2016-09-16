@@ -10,6 +10,14 @@ from scipy.sparse.csr import csr_matrix
 import logging
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 METHOD_NAMES = ['soa', 'pmi', 'tf_idf', 'bns']
+N_FEATURE_SWITCH_STRATEGY = 1000000
+
+
+def decide_joblib_strategy(feature2id_dict:Dict[str,int])->str:
+    if len(feature2id_dict) > N_FEATURE_SWITCH_STRATEGY:
+        return 'threading'
+    else:
+        return 'multiprocessing'
 
 
 def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]],
@@ -44,14 +52,18 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
         )
         assert isinstance(matrix_data_object, DataCsrMatrix)
         if method == 'pmi':
+            backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)
             scored_sparse_matrix = PMI().fit_transform(X=matrix_data_object.csr_matrix_,
                                                        n_docs_distribution=matrix_data_object.n_docs_distribution,
-                                                       n_jobs=n_jobs)
+                                                       n_jobs=n_jobs,
+                                                       joblib_backend=backend_strategy)
             assert isinstance(scored_sparse_matrix, csr_matrix)
         elif method == 'soa':
+            backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)
             scored_sparse_matrix = SOA().fit_transform(X=matrix_data_object.csr_matrix_,
                                                        unit_distribution=matrix_data_object.n_docs_distribution,
-                                                       n_jobs=n_jobs)
+                                                       n_jobs=n_jobs,
+                                                       joblib_backend=backend_strategy)
             assert isinstance(scored_sparse_matrix, csr_matrix)
     elif method == 'soa' and matrix_form == 'term_freq':
         # getting term-frequency matrix.
@@ -59,12 +71,16 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
         matrix_data_object = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
             labeled_documents=input_dict,
             ngram=ngram,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
+            joblib_backend=joblib_backend
         )
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
+        backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)
         scored_sparse_matrix = SOA().fit_transform(X=matrix_data_object.csr_matrix_,
-                                                   unit_distribution=matrix_data_object.n_docs_distribution)
+                                                   unit_distribution=matrix_data_object.n_docs_distribution,
+                                                   n_jobs=n_jobs,
+                                                   joblib_backend=backend_strategy)
         assert isinstance(scored_sparse_matrix, csr_matrix)
     elif method == 'bns':
         if not 'positive' in input_dict:
@@ -77,22 +93,23 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
         matrix_data_object = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
             labeled_documents=input_dict,
             ngram=ngram,
-            n_jobs=n_jobs
-        )
+            n_jobs=n_jobs,
+            joblib_backend=joblib_backend)
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
         true_class_index = matrix_data_object.label2id_dict['positive']
+        backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)
         scored_sparse_matrix = BNS().fit_transform(
             X=matrix_data_object.csr_matrix_,
             unit_distribution=matrix_data_object.n_term_freq_distribution,
             n_jobs=n_jobs,
-            true_index=true_class_index
+            true_index=true_class_index,
+            joblib_backend=backend_strategy
         )
         assert isinstance(scored_sparse_matrix, csr_matrix)
 
     else:
         raise Exception()
-
 
     return ScoredResultObject(
         scored_matrix=scored_sparse_matrix,

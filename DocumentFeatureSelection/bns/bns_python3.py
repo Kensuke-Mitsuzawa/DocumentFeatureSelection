@@ -51,6 +51,11 @@ class BNS(TransformerMixin):
         else:
             verbose = False
 
+        if 'joblib_backend' in fit_params:
+            joblib_backend = fit_params['joblib_backend']
+        else:
+            joblib_backend = 'multiprocessing'
+
         matrix_size = X.shape
         sample_range = list(range(0, matrix_size[0]))
         feature_range = list(range(0, matrix_size[1]))
@@ -58,7 +63,7 @@ class BNS(TransformerMixin):
         logger.debug(msg='Start calculating BNS with n(process)={}'.format(n_jobs))
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
 
-        bns_score_csr_source = joblib.Parallel(n_jobs=n_jobs)(
+        bns_score_csr_source = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
             joblib.delayed(self.docId_word_BNS)(
                 X=X,
                 feature_index=feature_index,
