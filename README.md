@@ -112,6 +112,14 @@ or
 
 See scripts in `examples/`
 
+# Performance
+
+With my MacBookPro (late 2015) and version 1.1.
+
+And input data has 98,600 feature dimensions.
+
+- PMI takes around 6 minutes (with both of multiprocessing and multithreading)
+
 
 # Change log
 
