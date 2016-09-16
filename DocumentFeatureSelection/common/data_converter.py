@@ -112,7 +112,7 @@ class DataConverter(object):
 
         return n_doc_distribution_list
 
-    def labeledMultiDocs2TermFreqMatrix(self, labeled_documents, ngram=1, n_jobs=1):
+    def labeledMultiDocs2TermFreqMatrix(self, labeled_documents, ngram=1, n_jobs=1, joblib_backend='auto'):
         """This function makes TERM-frequency matrix for TF-IDF calculation.
         TERM-frequency matrix is scipy.csr_matrix.
         """
@@ -129,12 +129,18 @@ class DataConverter(object):
         # convert data structure
         set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2TermFreqInfo(labeled_documents)
         assert isinstance(set_document_information, labeledMultiDocs2labeledDocsSet.SetDocumentInformation)
+        logger.info(msg='Get {} feature-dimension from your input data.'.format(len(set_document_information.feature_frequency)))
+        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) >= 100000:
+            joblib_backend = 'threading'
+        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) < 100000:
+            joblib_backend = 'multiprocessing'
 
         # make set of tuples to construct csr_matrix
         row, col, data = crs_matrix_constructor.preprocess_csr_matrix(
             feature_frequency=set_document_information.feature_frequency,
             vocabulary=set_document_information.feature2id_dict,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
+            joblib_backend=joblib_backend
         )
         logger.debug(msg='Finished pre-processing before CSR matrix')
         csr_matrix_ = crs_matrix_constructor.make_csr_objects(
@@ -165,7 +171,9 @@ class DataConverter(object):
 
 
     def labeledMultiDocs2DocFreqMatrix(self, labeled_documents,
-                                       ngram:int=1, n_jobs:int=1)->DataCsrMatrix:
+                                       ngram:int=1,
+                                       n_jobs:int=1,
+                                       joblib_backend:str='auto')->DataCsrMatrix:
         """This function makes document-frequency matrix for PMI calculation.
         Document-frequency matrix is scipy.csr_matrix.
 
@@ -213,19 +221,26 @@ class DataConverter(object):
             labeled_documents = ngram_constructor.ngram_constructor(
                 labeled_documents=labeled_documents,
                 ngram=ngram,
-                n_jobs=n_jobs
-            )
+                n_jobs=n_jobs)
 
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
-        set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2DocFreqInfo(labeled_documents)
+        set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2DocFreqInfo(labeled_documents,
+                                                                                         n_jobs=n_jobs,
+                                                                                         joblib_backend=joblib_backend)
         assert isinstance(set_document_information, labeledMultiDocs2labeledDocsSet.SetDocumentInformation)
+        logger.info(msg='Get {} feature-dimension from your input data.'.format(len(set_document_information.feature2id_dict)))
+        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) >= 100000:
+            joblib_backend = 'threading'
+        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) < 100000:
+            joblib_backend = 'multiprocessing'
 
         # make set of tuples to construct csr_matrix
         row, col, data = crs_matrix_constructor.preprocess_csr_matrix(
             feature_frequency=set_document_information.feature_frequency,
             vocabulary=set_document_information.feature2id_dict,
-            n_jobs=n_jobs
+            n_jobs=n_jobs,
+            joblib_backend=joblib_backend
         )
         logger.debug(msg='Finished pre-processing before CSR matrix')
         csr_matrix_ = crs_matrix_constructor.make_csr_objects(

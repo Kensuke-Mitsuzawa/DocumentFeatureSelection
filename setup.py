@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '1.0'
+__version__ = '1.1'
 
 import sys
 from setuptools import setup, find_packages

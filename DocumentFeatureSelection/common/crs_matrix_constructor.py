@@ -16,7 +16,7 @@ python_version = sys.version_info
 __author__ = 'kensuke-mi'
 
 PosTuple = namedtuple('PosTuple', ('doc_id', 'word_id', 'document_frequency'))
-
+PARAM_JOBLIB_BACKEND = ['multiprocessing', 'threading']
 
 def get_data_col_row_values(doc_id:int, word:int, doc_freq:int, vocaburary):
     assert isinstance(vocaburary, dict)
@@ -50,7 +50,7 @@ def make_csr_list(value_position_list):
     return row, col, data
 
 
-def preprocess_csr_matrix(feature_frequency, vocabulary, n_jobs):
+def preprocess_csr_matrix(feature_frequency, vocabulary, n_jobs:int, joblib_backend:str='Parallel'):
     """This function makes information to make csr matrix. Data-list/Row-list/Col-list
 
     :param feature_frequency list: list having dictionary of {feature: frequency}
@@ -70,13 +70,16 @@ def preprocess_csr_matrix(feature_frequency, vocabulary, n_jobs):
     >>> ([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2], [0, 1, 2, 4, 5, 6, 2, 3, 4, 5, 1, 2, 3, 7], [2, 3, 1, 1, 1, 1, 4, 1, 2, 1, 1, 1, 4, 2])
 
     """
+    if not joblib_backend in PARAM_JOBLIB_BACKEND:
+        assert Exception('joblib_backend parameter must be either of {}. However your input is {}.'.format(PARAM_JOBLIB_BACKEND, joblib_backend))
+
     assert isinstance(feature_frequency, list)
     assert isinstance(vocabulary, dict)
     assert isinstance(n_jobs, int)
 
     logger.debug(msg='making tuple pairs for csr matrix with n(process)={}'.format(n_jobs))
 
-    set_value_position_list = joblib.Parallel(n_jobs=n_jobs)(
+    set_value_position_list = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
         joblib.delayed(SUB_FUNC_make_value_pairs)(
             doc_id,
             doc_freq_obj,

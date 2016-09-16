@@ -112,6 +112,14 @@ or
 
 See scripts in `examples/`
 
+# Performance
+
+With my MacBookPro (late 2015) and version 1.1.
+
+And input data has 98,600 feature dimensions.
+
+- PMI takes around 6 minutes (with both of multiprocessing and multithreading)
+
 
 # Change log
 
@@ -135,3 +143,8 @@ Removed a bug when calling n_gram method of DataConverter
 
 * Refactored some modules. (I changed some module names. Sorry if you have problems...) 
 * Added interface script
+
+## 1.1 2016/9/16
+
+* Resolved bottleneck point in pre-processing
+* Fixed a bug which n_jobs parameter does not work in interface
