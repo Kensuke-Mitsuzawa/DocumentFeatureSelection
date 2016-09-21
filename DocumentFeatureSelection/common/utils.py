@@ -9,7 +9,10 @@ from DocumentFeatureSelection import init_logger
 import logging
 import collections
 import joblib
+import typing
+import numpy
 import sys
+import pickle
 python_version = sys.version_info
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
@@ -53,7 +56,7 @@ def __get_value_index(row_index, column_index, weight_csr_matrix, verbose=False)
     return value
 
 
-def make_non_zero_information(weight_csr_matrix):
+def make_non_zero_information(weight_csr_matrix:csr_matrix):
     """Construct Tuple of matrix value. Return value is array of ROW_COL_VAL namedtuple.
 
     :param weight_csr_matrix:
@@ -80,19 +83,31 @@ def make_non_zero_information(weight_csr_matrix):
 
 def get_label(row_col_val_tuple, label_id):
     assert isinstance(row_col_val_tuple, ROW_COL_VAL)
-    assert isinstance(label_id, dict)
+    assert isinstance(label_id, numpy.ndarray)
 
-    return label_id[row_col_val_tuple.row]
+    label = label_id[numpy.where(label_id['key'] == row_col_val_tuple.row)][0]['value']
+    try:
+        original_label = pickle.loads(label)
+    except (pickle.UnpicklingError, KeyError):
+        original_label = label.decode('utf-8')
+
+    return original_label
 
 
 def get_word(row_col_val_tuple, vocabulary):
     assert isinstance(row_col_val_tuple, ROW_COL_VAL)
-    assert isinstance(vocabulary, dict)
+    assert isinstance(vocabulary, numpy.ndarray)
 
-    return vocabulary[row_col_val_tuple.col]
+    vocab = vocabulary[numpy.where(vocabulary['key'] == row_col_val_tuple.col)][0]['value']
+    try:
+        original_vocab = pickle.loads(vocab)
+    except (pickle.UnpicklingError, KeyError):
+        original_vocab = vocab.decode('utf-8')
+
+    return original_vocab
 
 
-def SUB_FUNC_feature_extraction(row_col_val_tuple, id2label, id2vocab):
+def SUB_FUNC_feature_extraction(row_col_val_tuple:typing.Tuple[int,int,int], id2label:numpy.ndarray, id2vocab:numpy.ndarray):
     """This function returns PMI score between label and words.
 
     Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
@@ -139,19 +154,16 @@ def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, n_jobs
     :param bool cut_zero: return all result or not. If cut_zero = True, the method cuts zero features.
     """
     assert isinstance(weighted_matrix, csr_matrix)
-    assert isinstance(vocabulary, dict)
-    assert isinstance(label_group_dict, dict)
+    assert isinstance(vocabulary, numpy.ndarray)
+    assert isinstance(label_group_dict, numpy.ndarray)
     assert isinstance(n_jobs, int)
 
     logger.debug(msg='Start making scored dictionary object from scored matrix')
     logger.debug(msg='Input matrix size= {} * {}'.format(weighted_matrix.shape[0], weighted_matrix.shape[1]))
 
     value_index_items = make_non_zero_information(weighted_matrix)
-    id2label = {id:label for label, id in label_group_dict.items()}
-    if python_version > (3, 0, 0):
-        id2vocab = {id:voc for voc, id in vocabulary.items()}
-    else:
-        id2vocab = {id:voc for voc, id in vocabulary.viewitems()}
+    id2label = numpy.array([(element['value'], element['key']) for element in label_group_dict], dtype=[('key', '<i'), ('value', label_group_dict.dtype['key'])])
+    id2vocab = numpy.array([(element['value'], element['key']) for element in vocabulary], dtype=[('key', '<i'), ('value', vocabulary.dtype['key'])])
 
     score_objects = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(SUB_FUNC_feature_extraction)(
@@ -163,7 +175,6 @@ def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, n_jobs
     )
 
     logger.debug(msg='Finished making scored dictionary')
-
 
     return score_objects
 

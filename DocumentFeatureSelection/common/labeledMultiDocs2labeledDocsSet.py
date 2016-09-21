@@ -6,11 +6,13 @@ from DocumentFeatureSelection import init_logger
 from typing import Dict, List, Tuple, Any, Union
 import logging
 import joblib
+import numpy
+import pickle
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 N_FEATURE_SWITCH_STRATEGY = 1000000
 
 def generate_document_dict(document_key:str,
-                           documents:List[Union[List[str], Tuple[Any]]])->Tuple[str,Dict[str, int]]:
+                           documents:List[Union[List[str], Tuple[Any]]])->Tuple[str,Dict[Union[str,bytes], int]]:
     """This function gets Document-frequency count in given list of documents
     """
     assert isinstance(documents, list)
@@ -18,12 +20,6 @@ def generate_document_dict(document_key:str,
     document_frequencies = Counter()
     for word_frequency in word_frequencies: document_frequencies.update(word_frequency.keys())
     document_frequency_dict = dict(document_frequencies)
-    '''
-    V = set([t for d in documents for t in d])
-    document_frequency_dict = {}
-    for v in V:
-        binary_count = [1 for d in documents if v in d]
-        document_frequency_dict[v] = sum(binary_count)'''
 
     assert isinstance(document_frequency_dict, dict)
     return (document_key, document_frequency_dict)
@@ -86,22 +82,25 @@ def multiDocs2DocFreqInfo(labeled_documents:Dict[str, List[List[Union[str, Tuple
     if type_flag == set(['str']):
         feature_list = list(set(utils.flatten(labeled_documents.values())))
         feature_list = sorted(feature_list)
+        max_lenght = max([len(s) for s in feature_list])
     elif type_flag == set(['tuple']):
+        # make tuple into string
         feature_list = list(set(utils.flatten(labeled_documents.values())))
-        feature_list = sorted(feature_list)
+        feature_list = [pickle.dumps(feature_tuple) for feature_tuple in sorted(feature_list)]
+        max_lenght = max([len(s) for s in feature_list]) + 10
     else:
         raise Exception('Your input data has various type of data. Detected types: {}'.format(type_flag))
 
-    feature2id_dict = {t: index for index, t in enumerate(feature_list)}
+    feature2id = numpy.array(list(enumerate(feature_list)), dtype=[('value', 'i8'), ('key','S{}'.format(max_lenght))])  # type: array
 
     # make label: id dictionary structure
     label2id_dict = {}
-    # make list of document-frequency
+    # list of document-frequency array
     feature_frequency = []
 
-    if joblib_backend == 'auto' and len(feature2id_dict) >= N_FEATURE_SWITCH_STRATEGY:
+    if joblib_backend == 'auto' and len(feature2id) >= N_FEATURE_SWITCH_STRATEGY:
         joblib_backend = 'threading'
-    if joblib_backend == 'auto' and len(feature2id_dict) < N_FEATURE_SWITCH_STRATEGY:
+    if joblib_backend == 'auto' and len(feature2id) < N_FEATURE_SWITCH_STRATEGY:
         joblib_backend = 'multiprocessing'
 
     counted_frequency = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
@@ -112,6 +111,17 @@ def multiDocs2DocFreqInfo(labeled_documents:Dict[str, List[List[Union[str, Tuple
     for doc_key_freq_tuple in counted_frequency:
         label2id_dict.update({doc_key_freq_tuple[0]: document_index})
         document_index += 1
-        feature_frequency.append(doc_key_freq_tuple[1])
-
-    return SetDocumentInformation(feature_frequency, label2id_dict, feature2id_dict)
+        if type_flag == set(['str']):
+            doc_freq = doc_key_freq_tuple[1]
+        elif type_flag == set(['tuple']):
+            doc_freq = {pickle.dumps(key): value for key,value in list(doc_key_freq_tuple[1].items())}
+        else:
+            raise Exception()
+        feature_frequency.append(
+            numpy.array(
+                list(doc_freq.items()),
+                dtype=[('key', 'S{}'.format(max_lenght)), ('value', 'i8')]
+            ))
+    label_max_length = max([len(label) for label in label2id_dict.keys()]) + 10
+    label2id = numpy.array(list(label2id_dict.items()), dtype=[('key', 'S{}'.format(label_max_length)), ('value', 'i8')])
+    return SetDocumentInformation(feature_frequency, label2id, feature2id)

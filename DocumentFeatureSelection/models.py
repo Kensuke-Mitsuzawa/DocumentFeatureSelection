@@ -1,24 +1,28 @@
 from typing import Dict, List, Tuple, Union, Any, TypeVar
 from scipy.sparse.csr import csr_matrix
 from DocumentFeatureSelection.common import utils
+from numpy.core.multiarray import array, ndarray
 FeatureType = TypeVar('T', str, Tuple[Any])
 
-
 class SetDocumentInformation(object):
-    def __init__(self, feature_frequency:Dict[FeatureType,int],
-                 label2id_dict:Dict[str,int],
-                 feature2id_dict:Dict[FeatureType, int]):
+    __slots__ = ['feature_frequency', 'label2id', 'feature2id']
+
+    def __init__(self, feature_frequency:List[array],
+                 label2id:ndarray,
+                 feature2id:ndarray):
         self.feature_frequency = feature_frequency
-        self.label2id_dict = label2id_dict
-        self.feature2id_dict = feature2id_dict
+        self.label2id = label2id
+        self.feature2id = feature2id
 
 
 class DataCsrMatrix(object):
+    __slots__ = ['csr_matrix_', 'label2id_dict', 'vocabulary', 'n_docs_distribution', 'n_term_freq_distribution']
+
     def __init__(self, csr_matrix_:csr_matrix,
-                 label2id_dict:Dict[str, int],
-                 vocabulary:Dict[FeatureType, int],
-                 n_docs_distribution:List[int],
-                 n_term_freq_distribution:List[int]):
+                 label2id_dict:array,
+                 vocabulary:ndarray,
+                 n_docs_distribution:array,
+                 n_term_freq_distribution:array):
         self.csr_matrix_ = csr_matrix_
         self.label2id_dict = label2id_dict
         self.vocabulary = vocabulary
@@ -29,8 +33,8 @@ class DataCsrMatrix(object):
 class ScoredResultObject(object):
     def __init__(self,
                  scored_matrix:csr_matrix,
-                 label2id_dict:Dict[str,int],
-                 feature2id_dict=Dict[FeatureType,int],
+                 label2id_dict:ndarray,
+                 feature2id_dict=ndarray,
                  method:str=None,
                  matrix_form:str=None):
         self.scored_matrix = scored_matrix

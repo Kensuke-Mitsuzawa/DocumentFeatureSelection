@@ -8,6 +8,7 @@ from logging import getLogger, StreamHandler
 import logging
 import joblib
 import math
+import numpy
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p',
@@ -30,7 +31,7 @@ class PMI(object):
         """Main method of PMI class.
         """
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs_distribution, list)
+        assert isinstance(n_docs_distribution, numpy.ndarray)
 
         matrix_size = X.shape
         sample_range = list(range(0, matrix_size[0]))
@@ -65,7 +66,12 @@ class PMI(object):
 
         return pmi_featured_csr_matrix
 
-    def docId_word_PMI(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index, verbose=False):
+    def docId_word_PMI(self, X:csr_matrix,
+                       n_docs_distribution:numpy.ndarray,
+                       n_total_doc:int,
+                       feature_index:int,
+                       sample_index:int,
+                       verbose=False):
         """Calculate PMI score for fit_format()
 
         :param X:
@@ -76,7 +82,7 @@ class PMI(object):
         :return:
         """
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs_distribution, list)
+        assert isinstance(n_docs_distribution, numpy.ndarray)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
@@ -90,7 +96,11 @@ class PMI(object):
         )
         return sample_index, feature_index, pmi_score
 
-    def pmi(self, X, n_docs_distribution, n_total_doc, feature_index, sample_index, verbose=False):
+    def pmi(self, X:csr_matrix,
+            n_docs_distribution:numpy.ndarray,
+            n_total_doc:int,
+            feature_index:int,
+            sample_index:int, verbose=False):
         """get PMI score for given feature & sample index
 
         :param X:
@@ -99,7 +109,7 @@ class PMI(object):
         :return:
         """
         assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs_distribution, list)
+        assert isinstance(n_docs_distribution, numpy.ndarray)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 

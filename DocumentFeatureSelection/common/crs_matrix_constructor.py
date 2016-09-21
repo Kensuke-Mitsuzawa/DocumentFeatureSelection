@@ -3,6 +3,8 @@ from collections import namedtuple
 import joblib
 import sys
 import logging
+import numpy
+from typing import List, Tuple
 from scipy.sparse import csr_matrix
 
 logging.basicConfig(format='%(asctime)s %(message)s',
@@ -15,37 +17,48 @@ logger.addHandler(handler)
 python_version = sys.version_info
 __author__ = 'kensuke-mi'
 
-PosTuple = namedtuple('PosTuple', ('doc_id', 'word_id', 'document_frequency'))
+
+class PosTuple(object):
+    __slots__ = ['doc_id', 'word_id', 'document_frequency']
+    def __init__(self, doc_id, word_id, document_frequency):
+        self.doc_id = doc_id
+        self.word_id = word_id
+        self.document_frequency = document_frequency
+
+
 PARAM_JOBLIB_BACKEND = ['multiprocessing', 'threading']
 
-def get_data_col_row_values(doc_id:int, word:int, doc_freq:int, vocaburary):
-    assert isinstance(vocaburary, dict)
-    try:
-        col_value = vocaburary[word]
-    except KeyError:
-        print()
+def get_data_col_row_values(doc_id:int, word:int, doc_freq:int, vocaburary:numpy.ndarray)->numpy.array:
+    """* what you can do
+     - You get array of [document_id, feature_id, value(frequency)]
+    """
+    assert isinstance(vocaburary, numpy.ndarray)
+    col_element = vocaburary[numpy.where(vocaburary['key']==word)]
+    assert len(col_element) == 1
+    col_value = col_element[0]['value']
     # df value is word frequency in documents
     df_value = doc_freq
 
-    return PosTuple(doc_id, col_value, df_value)
+    return numpy.array([doc_id, col_value, df_value])
 
-def SUB_FUNC_make_value_pairs(doc_id:int, doc_freq_obj, vocabulary):
-    value_pairs = [
-        get_data_col_row_values(doc_id=doc_id, word=word, doc_freq=freq, vocaburary=vocabulary)
-        for word, freq
-        in doc_freq_obj.items()
-        ]
-    assert isinstance(value_pairs, list)
+def SUB_FUNC_make_value_pairs(doc_id:int, doc_freq_obj:numpy.ndarray, vocabulary:numpy.ndarray)->numpy.ndarray:
+
+    value_pairs = numpy.array([
+        get_data_col_row_values(doc_id=doc_id, word=key_value_tuple[0], doc_freq=key_value_tuple[1], vocaburary=vocabulary)
+        for key_value_tuple
+        in doc_freq_obj])
+
     return value_pairs
 
-def make_csr_list(value_position_list):
+
+def make_csr_list(value_position_list:List[numpy.array])->Tuple[List[int], List[int], List[int]]:
     data = []
     row = []
     col = []
     for position_tuple in value_position_list:
-        row.append(position_tuple.doc_id)
-        col.append(position_tuple.word_id)
-        data.append(position_tuple.document_frequency)
+        row.append(position_tuple[0])
+        col.append(position_tuple[1])
+        data.append(position_tuple[2])
 
     return row, col, data
 
@@ -74,7 +87,7 @@ def preprocess_csr_matrix(feature_frequency, vocabulary, n_jobs:int, joblib_back
         assert Exception('joblib_backend parameter must be either of {}. However your input is {}.'.format(PARAM_JOBLIB_BACKEND, joblib_backend))
 
     assert isinstance(feature_frequency, list)
-    assert isinstance(vocabulary, dict)
+    assert isinstance(vocabulary, (numpy.ndarray, numpy.array))
     assert isinstance(n_jobs, int)
 
     logger.debug(msg='making tuple pairs for csr matrix with n(process)={}'.format(n_jobs))
@@ -86,11 +99,12 @@ def preprocess_csr_matrix(feature_frequency, vocabulary, n_jobs:int, joblib_back
             vocabulary
         )
         for doc_id, doc_freq_obj in enumerate(feature_frequency)
-    )
+    )  # type: List[numpy.ndarray]
+
+    # make 2-d list into 1-d list
     value_position_list = sorted(
             [l for set in set_value_position_list for l in set],
-        key=lambda pos_tuple: (pos_tuple[0], pos_tuple[1], pos_tuple[2])
-    )
+        key=lambda pos_tuple: (pos_tuple[0], pos_tuple[1], pos_tuple[2]))
 
     row, col, data = make_csr_list(value_position_list)
 
