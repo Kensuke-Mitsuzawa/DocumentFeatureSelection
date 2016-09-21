@@ -35,8 +35,20 @@ def multiDocs2TermFreqInfo(labeled_documents):
 
     vocabulary_list = list(set(utils.flatten(labeled_documents.values())))
     vocabulary_list = sorted(vocabulary_list)
+    type_flag = set([judge_feature_type(docs) for docs in labeled_documents.values()])
+    if type_flag == set(['str']):
+        feature_list = list(set(utils.flatten(labeled_documents.values())))
+        feature_list = sorted(feature_list)
+        max_lenght = max([len(s) for s in feature_list])
+    elif type_flag == set(['tuple']):
+        # make tuple into string
+        feature_list = list(set(utils.flatten(labeled_documents.values())))
+        feature_list = [pickle.dumps(feature_tuple) for feature_tuple in sorted(feature_list)]
+        max_lenght = max([len(s) for s in feature_list]) + 10
+    else:
+        raise Exception('Your input data has various type of data. Detected types: {}'.format(type_flag))
 
-    vocaburary2id_dict = {t: index for index, t in enumerate(vocabulary_list)}
+    feature2id = numpy.array(list(enumerate(feature_list)), dtype=[('value', 'i8'), ('key','S{}'.format(max_lenght))])  # type: ndarray
 
     # make label: id dictionary structure
     label2id_dict = {}
@@ -45,15 +57,28 @@ def multiDocs2TermFreqInfo(labeled_documents):
     document_index = 0
 
     for key, docs in sorted(labeled_documents.items(), key=lambda key_value_tuple: key_value_tuple[0]):
-        words_in_docs = utils.flatten(docs)
-        feature_frequency.append(dict(Counter(words_in_docs)))
         label2id_dict.update({key: document_index})
         document_index += 1
+        words_in_docs = utils.flatten(docs)
+        if type_flag == set(['str']):
+            term_freq = Counter(words_in_docs)
+        elif type_flag == set(['tuple']):
+            term_freq = {pickle.dumps(key): value for key,value in dict(Counter(words_in_docs)).items()}
+        else:
+            raise Exception()
 
-    assert isinstance(vocaburary2id_dict, dict)
+        feature_frequency.append(
+            numpy.array(
+                [(index_tuple[1], index_tuple[0]) for index_tuple in enumerate(term_freq)],
+                dtype=[('key', 'S{}'.format(max_lenght)), ('value', 'i8')]
+            ))
+
+    label_max_length = max([len(label) for label in label2id_dict.keys()]) + 10
+    label2id = numpy.array(list(label2id_dict.items()), dtype=[('key', 'S{}'.format(label_max_length)), ('value', 'i8')])
+    assert isinstance(feature2id, numpy.ndarray)
     assert isinstance(feature_frequency, list)
-    assert isinstance(label2id_dict, dict)
-    return SetDocumentInformation(feature_frequency, label2id_dict, vocaburary2id_dict)
+    assert isinstance(label2id, numpy.ndarray)
+    return SetDocumentInformation(feature_frequency, label2id, feature2id)
 
 
 def judge_feature_type(docs:List[List[Union[str, Tuple[Any]]]])->str:
@@ -91,7 +116,7 @@ def multiDocs2DocFreqInfo(labeled_documents:Dict[str, List[List[Union[str, Tuple
     else:
         raise Exception('Your input data has various type of data. Detected types: {}'.format(type_flag))
 
-    feature2id = numpy.array(list(enumerate(feature_list)), dtype=[('value', 'i8'), ('key','S{}'.format(max_lenght))])  # type: array
+    feature2id = numpy.array(list(enumerate(feature_list)), dtype=[('value', 'i8'), ('key','S{}'.format(max_lenght))])  # type: ndarray
 
     # make label: id dictionary structure
     label2id_dict = {}

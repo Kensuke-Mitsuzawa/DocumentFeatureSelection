@@ -44,7 +44,7 @@ def get_data_col_row_values(doc_id:int, word:int, doc_freq:int, vocaburary:numpy
 def SUB_FUNC_make_value_pairs(doc_id:int, doc_freq_obj:numpy.ndarray, vocabulary:numpy.ndarray)->numpy.ndarray:
 
     value_pairs = numpy.array([
-        get_data_col_row_values(doc_id=doc_id, word=key_value_tuple[0], doc_freq=key_value_tuple[1], vocaburary=vocabulary)
+        get_data_col_row_values(doc_id=doc_id, word=key_value_tuple['key'], doc_freq=key_value_tuple['value'], vocaburary=vocabulary)
         for key_value_tuple
         in doc_freq_obj])
 
@@ -87,7 +87,7 @@ def preprocess_csr_matrix(feature_frequency, vocabulary, n_jobs:int, joblib_back
         assert Exception('joblib_backend parameter must be either of {}. However your input is {}.'.format(PARAM_JOBLIB_BACKEND, joblib_backend))
 
     assert isinstance(feature_frequency, list)
-    assert isinstance(vocabulary, (numpy.ndarray, numpy.array))
+    assert isinstance(vocabulary, numpy.ndarray)
     assert isinstance(n_jobs, int)
 
     logger.debug(msg='making tuple pairs for csr matrix with n(process)={}'.format(n_jobs))

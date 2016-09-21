@@ -149,7 +149,7 @@ class DataConverter(object):
         logger.debug(msg='Finished pre-processing before CSR matrix')
         csr_matrix_ = crs_matrix_constructor.make_csr_objects(
                 row=row, col=col, data=data,
-                n_feature=max(set_document_information.feature2id.values())+1,
+                n_feature=len(set_document_information.feature2id)+1,
                 n_docs=len(set_document_information.feature_frequency))
 
         # count n(docs) per label
@@ -164,9 +164,9 @@ class DataConverter(object):
         )
 
         assert isinstance(csr_matrix_, csr_matrix)
-        assert isinstance(set_document_information.label2id, dict)
-        assert isinstance(set_document_information.label2id, dict)
-        assert isinstance(n_docs_distribution, list)
+        assert isinstance(set_document_information.label2id, numpy.ndarray)
+        assert isinstance(set_document_information.label2id, numpy.ndarray)
+        assert isinstance(n_docs_distribution, numpy.ndarray)
         return DataCsrMatrix(
                 csr_matrix_,
                 set_document_information.label2id,

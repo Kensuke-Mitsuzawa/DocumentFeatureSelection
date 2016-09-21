@@ -3,6 +3,7 @@ from logging import getLogger, StreamHandler
 import logging
 import joblib
 import math
+import numpy
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p',
@@ -18,9 +19,9 @@ class SOA(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, unit_distribution, n_jobs=1, verbose=False, joblib_backend='multiprocessing'):
+    def fit_transform(self, X, unit_distribution:numpy.ndarray, n_jobs=1, verbose=False, joblib_backend='multiprocessing'):
         assert isinstance(X, csr_matrix)
-        assert isinstance(unit_distribution, list)
+        assert isinstance(unit_distribution, numpy.ndarray)
 
         matrix_size = X.shape
         sample_range = list(range(0, matrix_size[0]))
@@ -56,11 +57,14 @@ class SOA(object):
         return soa_featured_csr_matrix
 
 
-    def docId_word_soa(self, X, unit_distribution, n_total_doc, feature_index, sample_index, verbose=False):
+    def docId_word_soa(self, X:csr_matrix, unit_distribution:numpy.ndarray,
+                       n_total_doc:int,
+                       feature_index:int,
+                       sample_index:int, verbose=False):
         """
         """
         assert isinstance(X, csr_matrix)
-        assert isinstance(unit_distribution, list)
+        assert isinstance(unit_distribution, numpy.ndarray)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
@@ -74,10 +78,13 @@ class SOA(object):
         )
         return sample_index, feature_index, soa_score
 
-    def soa(self, X, unit_distribution, n_total_docs, feature_index, sample_index, verbose=False):
+    def soa(self, X:csr_matrix, unit_distribution:numpy.ndarray,
+            n_total_docs:int,
+            feature_index:int,
+            sample_index:int, verbose=False):
         # X is either of term-frequency matrix per label or document-frequency per label
         assert isinstance(X, csr_matrix)
-        assert isinstance(unit_distribution, list)
+        assert isinstance(unit_distribution, numpy.ndarray)
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
