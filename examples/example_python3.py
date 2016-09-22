@@ -35,7 +35,8 @@ pmi_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='pmi',
     ngram=1,
-    n_jobs=5
+    n_jobs=1,
+    use_cython=True
 )
 pprint.pprint(pmi_scored_object.ScoreMatrix2ScoreDictionary())
 

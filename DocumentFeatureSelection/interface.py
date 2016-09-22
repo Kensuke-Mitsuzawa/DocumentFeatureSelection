@@ -26,7 +26,8 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
                           ngram:int=1,
                           n_jobs:int=1,
                           joblib_backend='auto',
-                          matrix_form=None)->ScoredResultObject:
+                          matrix_form=None,
+                          use_cython:bool=False)->ScoredResultObject:
     if not method in METHOD_NAMES:
         raise Exception('method name must be either of {}. Yours: {}'.format(METHOD_NAMES, method))
 
@@ -57,7 +58,8 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
             scored_sparse_matrix = PMI().fit_transform(X=matrix_data_object.csr_matrix_,
                                                        n_docs_distribution=matrix_data_object.n_docs_distribution,
                                                        n_jobs=n_jobs,
-                                                       joblib_backend=backend_strategy)
+                                                       joblib_backend=backend_strategy,
+                                                       use_cython=use_cython)
             assert isinstance(scored_sparse_matrix, csr_matrix)
         elif method == 'soa':
             backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)

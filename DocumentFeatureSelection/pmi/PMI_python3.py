@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from scipy.sparse import csr_matrix
 from logging import getLogger, StreamHandler
+
 import logging
 import joblib
 import math
@@ -27,7 +28,12 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X, n_docs_distribution, n_jobs=1, verbose=False, joblib_backend='multiprocessing'):
+    def fit_transform(self, X,
+                      n_docs_distribution,
+                      n_jobs=1,
+                      verbose=False,
+                      joblib_backend='multiprocessing',
+                      use_cython:bool=False):
         """Main method of PMI class.
         """
         assert isinstance(X, csr_matrix)
@@ -40,6 +46,13 @@ class PMI(object):
 
         logger.debug(msg='Start calculating PMI with n(process)={}'.format(n_jobs))
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
+
+        if use_cython:
+            import pyximport; pyximport.install()
+            from DocumentFeatureSelection.pmi import pmi
+            self.pmi = pmi
+        else:
+            self.pmi = self.pmi
 
         pmi_score_csr_source = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
             joblib.delayed(self.docId_word_PMI)(
@@ -71,7 +84,8 @@ class PMI(object):
                        n_total_doc:int,
                        feature_index:int,
                        sample_index:int,
-                       verbose=False):
+                       verbose=False,
+                       use_cython:bool=False):
         """Calculate PMI score for fit_format()
 
         :param X:
@@ -81,11 +95,6 @@ class PMI(object):
         :param label:
         :return:
         """
-        assert isinstance(X, csr_matrix)
-        assert isinstance(n_docs_distribution, numpy.ndarray)
-        assert isinstance(feature_index, int)
-        assert isinstance(sample_index, int)
-
         pmi_score = self.pmi(
             X=X,
             n_docs_distribution=n_docs_distribution,
