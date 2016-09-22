@@ -11,18 +11,22 @@ import pickle
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 N_FEATURE_SWITCH_STRATEGY = 1000000
 
+def decode_into_utf8(string:str)->bytes:
+    """* what you can do
+    - convert string into etf-8
+    """
+    return string.encode('utf-8')
+
 def generate_document_dict(document_key:str,
-                           documents:List[Union[List[str], Tuple[Any]]])->Tuple[str,Dict[Union[str,bytes], int]]:
+                           documents:List[Union[List[str], Tuple[Any]]])->Tuple[str,Counter]:
     """This function gets Document-frequency count in given list of documents
     """
     assert isinstance(documents, list)
     word_frequencies = [Counter(document) for document in documents]
     document_frequencies = Counter()
     for word_frequency in word_frequencies: document_frequencies.update(word_frequency.keys())
-    document_frequency_dict = dict(document_frequencies)
 
-    assert isinstance(document_frequency_dict, dict)
-    return (document_key, document_frequency_dict)
+    return (document_key, document_frequencies)
 
 
 def multiDocs2TermFreqInfo(labeled_documents):
@@ -63,13 +67,13 @@ def multiDocs2TermFreqInfo(labeled_documents):
         if type_flag == set(['str']):
             term_freq = Counter(words_in_docs)
         elif type_flag == set(['tuple']):
-            term_freq = {pickle.dumps(key): value for key,value in dict(Counter(words_in_docs)).items()}
+            term_freq = {pickle.dumps(key): value for key,value in Counter(words_in_docs).items()}
         else:
             raise Exception()
 
         feature_frequency.append(
             numpy.array(
-                [(index_tuple[1], index_tuple[0]) for index_tuple in enumerate(term_freq)],
+                [(index_tuple[0], index_tuple[1]) for index_tuple in term_freq.items()],
                 dtype=[('key', 'S{}'.format(max_lenght)), ('value', 'i8')]
             ))
 
@@ -105,11 +109,12 @@ def multiDocs2DocFreqInfo(labeled_documents:Dict[str, List[List[Union[str, Tuple
     assert len(type_flag)==1
 
     if type_flag == set(['str']):
-        feature_list = list(set(utils.flatten(labeled_documents.values())))
+        # all features are encoded into utf-8
+        feature_list = [decode_into_utf8(str) for str in list(set(utils.flatten(labeled_documents.values())))]
         feature_list = sorted(feature_list)
         max_lenght = max([len(s) for s in feature_list])
     elif type_flag == set(['tuple']):
-        # make tuple into string
+        # feature tuples are serialized by pickle
         feature_list = list(set(utils.flatten(labeled_documents.values())))
         feature_list = [pickle.dumps(feature_tuple) for feature_tuple in sorted(feature_list)]
         max_lenght = max([len(s) for s in feature_list]) + 10
@@ -137,7 +142,7 @@ def multiDocs2DocFreqInfo(labeled_documents:Dict[str, List[List[Union[str, Tuple
         label2id_dict.update({doc_key_freq_tuple[0]: document_index})
         document_index += 1
         if type_flag == set(['str']):
-            doc_freq = doc_key_freq_tuple[1]
+            doc_freq = {decode_into_utf8(key):value for key, value in doc_key_freq_tuple[1].items()}
         elif type_flag == set(['tuple']):
             doc_freq = {pickle.dumps(key): value for key,value in list(doc_key_freq_tuple[1].items())}
         else:

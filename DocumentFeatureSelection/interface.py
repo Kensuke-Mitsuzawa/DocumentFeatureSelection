@@ -8,6 +8,7 @@ from DocumentFeatureSelection import init_logger
 from typing import List, Dict, Any, Union, Tuple
 from scipy.sparse.csr import csr_matrix
 import logging
+import numpy
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 METHOD_NAMES = ['soa', 'pmi', 'tf_idf', 'bns']
 N_FEATURE_SWITCH_STRATEGY = 1000000
@@ -97,7 +98,8 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
             joblib_backend=joblib_backend)
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
-        true_class_index = matrix_data_object.label2id_dict['positive']
+        true_class_index = matrix_data_object.label2id_dict[
+            numpy.where(matrix_data_object.label2id_dict['key'] == b'positive')]['value'][0]
         backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)
         scored_sparse_matrix = BNS().fit_transform(
             X=matrix_data_object.csr_matrix_,

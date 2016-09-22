@@ -26,7 +26,7 @@ class BNS(TransformerMixin):
         if n_categories != 2:
             raise Exception('BNS input must be of 2 categories')
 
-    def fit_transform(self, X, y=None, **fit_params):
+    def fit_transform(self, X:csr_matrix, y=None, **fit_params):
         assert isinstance(X, csr_matrix)
 
         if not 'unit_distribution' in fit_params:
@@ -88,7 +88,12 @@ class BNS(TransformerMixin):
 
         return bns_featured_csr_matrix
 
-    def docId_word_BNS(self, X, feature_index, sample_index, unit_distribution, true_index, verbose=False):
+    def docId_word_BNS(self, X:csr_matrix,
+                       feature_index:int,
+                       sample_index:int,
+                       unit_distribution:np.ndarray,
+                       true_index:int,
+                       verbose=False):
 
         assert isinstance(X, csr_matrix)
         assert isinstance(feature_index, int)
@@ -104,7 +109,12 @@ class BNS(TransformerMixin):
         )
         return sample_index, feature_index, bns_score
 
-    def bns(self, X, feature_index, sample_index, unit_distribution, true_index=0, verbose=False):
+    def bns(self, X:csr_matrix,
+            feature_index:int,
+            sample_index:int,
+            unit_distribution:np.ndarray,
+            true_index:int=0,
+            verbose:bool=False):
         if true_index==0:
             false_index = 1
         elif true_index==1:

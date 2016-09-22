@@ -149,7 +149,7 @@ class DataConverter(object):
         logger.debug(msg='Finished pre-processing before CSR matrix')
         csr_matrix_ = crs_matrix_constructor.make_csr_objects(
                 row=row, col=col, data=data,
-                n_feature=len(set_document_information.feature2id)+1,
+                n_feature=len(set_document_information.feature2id),
                 n_docs=len(set_document_information.feature_frequency))
 
         # count n(docs) per label
@@ -250,7 +250,7 @@ class DataConverter(object):
         logger.debug(msg='Finished pre-processing before CSR matrix')
         csr_matrix_ = crs_matrix_constructor.make_csr_objects(
                 row=row, col=col, data=data,
-                n_feature=len(set_document_information.feature2id)+1,
+                n_feature=len(set_document_information.feature2id),
                 n_docs=len(set_document_information.feature_frequency))
 
         # count n(docs) per label

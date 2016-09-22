@@ -58,6 +58,26 @@ tf_idf_scored_object = interface.run_feature_selection(
 pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
 
 
+input_dict = {
+    "positive": [
+        ["I", "aa", "aa", "aa", "aa", "aa"],
+        ["bb", "aa", "aa", "aa", "aa", "aa"],
+        ["I", "aa", "hero", "some", "ok", "aa"]
+    ],
+    "negative": [
+        ["bb", "bb", "bb"],
+        ["bb", "bb", "bb"],
+        ["hero", "ok", "bb"],
+        ["hero", "cc", "bb"],
+    ]
+}
+tf_idf_scored_object = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='bns',
+    n_jobs=1
+)
+pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
+
 
 # ======================================================================================================
 # expert usage
@@ -97,6 +117,28 @@ pprint.pprint(soa_scored_object.ScoreMatrix2ScoreDictionary())
 tf_idf_scored_object = interface.run_feature_selection(
     input_dict=input_dict_tuple_feature,
     method='tf_idf',
+    n_jobs=5
+)
+pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
+
+
+input_dict_tuple_feature = {
+    "positive": [
+        [ (("he", "N"), ("is", "V")), (("very", "ADV"), ("good", "ADJ")), (("guy", "N"),) ],
+        [ (("you", "N"), ("are", "V")), (("very", "ADV"), ("awesome", "ADJ")), (("guy", "N"),) ],
+        [ (("i", "N"), ("am", "V")), (("very", "ADV"), ("good", "ADJ")), (("guy", "N"),) ]
+    ],
+    "negative": [
+        [ (("she", "N"), ("is", "V")), (("very", "ADV"), ("good", "ADJ")), (("girl", "N"),) ],
+        [ (("you", "N"), ("are", "V")), (("very", "ADV"), ("awesome", "ADJ")), (("girl", "N"),) ],
+        [ (("she", "N"), ("is", "V")), (("very", "ADV"), ("good", "ADJ")), (("guy", "N"),) ]
+    ]
+}
+
+
+tf_idf_scored_object = interface.run_feature_selection(
+    input_dict=input_dict_tuple_feature,
+    method='bns',
     n_jobs=5
 )
 pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())

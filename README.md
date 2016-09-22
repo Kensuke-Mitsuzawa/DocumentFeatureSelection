@@ -112,16 +112,14 @@ or
 
 See scripts in `examples/`
 
-# Performance
-
-With my MacBookPro (late 2015) and version 1.1.
-
-And input data has 98,600 feature dimensions.
-
-- PMI takes around 6 minutes (with both of multiprocessing and multithreading)
-
 
 # Change log
+
+For your reference I checked performance under following environment,
+ 
+- MacBookPro (late 2015) 3.1 GHz Intel Core i7, 16 GB 1867 MHz DDR3
+- input data has 98,600 feature dimensions.
+
 
 ## 0.6 2016/04/02
 
@@ -148,7 +146,11 @@ Removed a bug when calling n_gram method of DataConverter
 
 * Resolved bottleneck point in pre-processing
 * Fixed a bug which n_jobs parameter does not work in interface
+* PMI takes around 6 minutes (with both of multiprocessing and multithreading)
 
 ## 1.2 2016/9/16
 
 * A bug in calculating TF-IDF score, this bug was resolved.
+
+## 1.3 2016/9/
+
