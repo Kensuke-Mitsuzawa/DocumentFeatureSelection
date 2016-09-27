@@ -36,8 +36,7 @@ tf_idf_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='tf_idf',
     ngram=1,
-    n_jobs=5,
-    use_cython=False
+    n_jobs=5
 )
 
 pmi_scored_object = interface.run_feature_selection(
@@ -48,6 +47,17 @@ pmi_scored_object = interface.run_feature_selection(
     use_cython=False
 )
 pprint.pprint(pmi_scored_object.ScoreMatrix2ScoreDictionary())
+
+# you can use cython version pmi also
+# !Warning! The output value with "use_cython=True" is veeeery little different such as the 10th decimal place.
+pmi_scored_object_cython = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='pmi',
+    ngram=1,
+    n_jobs=1,
+    use_cython=True
+)
+pprint.pprint(pmi_scored_object_cython.ScoreMatrix2ScoreDictionary())
 
 
 soa_scored_object = interface.run_feature_selection(

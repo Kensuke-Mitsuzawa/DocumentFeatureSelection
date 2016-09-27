@@ -7,16 +7,17 @@ __version__ = '1.3'
 
 import sys
 from setuptools import setup, find_packages
+import numpy
 from Cython.Build import cythonize
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
+
 
 python_version = sys.version_info
 
 if python_version >= (3, 0, 0):
     install_requires = ['six', 'setuptools>=1.0', 'joblib',
                         'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc', 'cython', 'scikit-learn']
-
 
 try:
     import pypandoc
@@ -53,5 +54,6 @@ setup(
     setup_requires=['six', 'setuptools>=1.0'],
     classifiers=[],
     cmdclass={'build_ext': build_ext},
-    ext_modules=[Extension("pmi", ["DocumentFeatureSelection/pmi/pmi.pyx"])]
+    ext_modules=cythonize("DocumentFeatureSelection/pmi/pmi_cython.pyx"),
+    include_dirs = [numpy.get_include()]
 )
