@@ -31,12 +31,21 @@ input_dict = {
     ]
 }
 
+
+tf_idf_scored_object = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='tf_idf',
+    ngram=1,
+    n_jobs=5,
+    use_cython=False
+)
+
 pmi_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='pmi',
     ngram=1,
     n_jobs=1,
-    use_cython=True
+    use_cython=False
 )
 pprint.pprint(pmi_scored_object.ScoreMatrix2ScoreDictionary())
 
@@ -48,15 +57,6 @@ soa_scored_object = interface.run_feature_selection(
     n_jobs=5
 )
 pprint.pprint(soa_scored_object.ScoreMatrix2ScoreDictionary())
-
-
-tf_idf_scored_object = interface.run_feature_selection(
-    input_dict=input_dict,
-    method='tf_idf',
-    ngram=1,
-    n_jobs=5
-)
-pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
 
 
 input_dict = {
@@ -72,12 +72,12 @@ input_dict = {
         ["hero", "cc", "bb"],
     ]
 }
-tf_idf_scored_object = interface.run_feature_selection(
+bns_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='bns',
     n_jobs=1
 )
-pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
+pprint.pprint(bns_scored_object.ScoreMatrix2ScoreDictionary())
 
 
 # ======================================================================================================
@@ -137,9 +137,9 @@ input_dict_tuple_feature = {
 }
 
 
-tf_idf_scored_object = interface.run_feature_selection(
+bns_scored_object = interface.run_feature_selection(
     input_dict=input_dict_tuple_feature,
     method='bns',
     n_jobs=5
 )
-pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
+pprint.pprint(bns_scored_object.ScoreMatrix2ScoreDictionary())

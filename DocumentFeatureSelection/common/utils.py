@@ -83,28 +83,23 @@ def make_non_zero_information(weight_csr_matrix:csr_matrix):
 
 def get_label(row_col_val_tuple, label_id):
     assert isinstance(row_col_val_tuple, ROW_COL_VAL)
-    assert isinstance(label_id, numpy.ndarray)
+    #assert isinstance(label_id, numpy.ndarray)
+    assert isinstance(label_id, dict)
 
-    label = label_id[numpy.where(label_id['key'] == row_col_val_tuple.row)][0]['value']
-    try:
-        original_label = pickle.loads(label)
-    except (pickle.UnpicklingError, KeyError):
-        original_label = label.decode('utf-8')
+    #label = label_id[numpy.where(label_id['key'] == row_col_val_tuple.row)][0]['value']
+    label = label_id[row_col_val_tuple.row]
 
-    return original_label
+    return label
 
 
 def get_word(row_col_val_tuple, vocabulary):
     assert isinstance(row_col_val_tuple, ROW_COL_VAL)
-    assert isinstance(vocabulary, numpy.ndarray)
+    #assert isinstance(vocabulary, numpy.ndarray)
+    assert isinstance(vocabulary, dict)
+    #vocab = vocabulary[numpy.where(vocabulary['key'] == row_col_val_tuple.col)][0]['value']
+    vocab = vocabulary[row_col_val_tuple.col]
 
-    vocab = vocabulary[numpy.where(vocabulary['key'] == row_col_val_tuple.col)][0]['value']
-    try:
-        original_vocab = pickle.loads(vocab)
-    except (pickle.UnpicklingError, KeyError):
-        original_vocab = vocab.decode('utf-8')
-
-    return original_vocab
+    return vocab
 
 
 def SUB_FUNC_feature_extraction(row_col_val_tuple:typing.Tuple[int,int,int], id2label:numpy.ndarray, id2vocab:numpy.ndarray):
@@ -154,16 +149,18 @@ def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, n_jobs
     :param bool cut_zero: return all result or not. If cut_zero = True, the method cuts zero features.
     """
     assert isinstance(weighted_matrix, csr_matrix)
-    assert isinstance(vocabulary, numpy.ndarray)
-    assert isinstance(label_group_dict, numpy.ndarray)
+    assert isinstance(vocabulary, dict)
+    assert isinstance(label_group_dict, dict)
     assert isinstance(n_jobs, int)
 
     logger.debug(msg='Start making scored dictionary object from scored matrix')
     logger.debug(msg='Input matrix size= {} * {}'.format(weighted_matrix.shape[0], weighted_matrix.shape[1]))
 
     value_index_items = make_non_zero_information(weighted_matrix)
-    id2label = numpy.array([(element['value'], element['key']) for element in label_group_dict], dtype=[('key', '<i'), ('value', label_group_dict.dtype['key'])])
-    id2vocab = numpy.array([(element['value'], element['key']) for element in vocabulary], dtype=[('key', '<i'), ('value', vocabulary.dtype['key'])])
+    #id2label = numpy.array([(element['value'], element['key']) for element in label_group_dict], dtype=[('key', '<i'), ('value', label_group_dict.dtype['key'])])
+    #id2vocab = numpy.array([(element['value'], element['key']) for element in vocabulary], dtype=[('key', '<i'), ('value', vocabulary.dtype['key'])])
+    id2label = {value:key for key, value in label_group_dict.items()}
+    id2vocab = {value:key for key, value in vocabulary.items()}
 
     score_objects = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(SUB_FUNC_feature_extraction)(

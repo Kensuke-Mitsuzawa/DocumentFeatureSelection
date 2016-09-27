@@ -68,6 +68,7 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
                                                        n_jobs=n_jobs,
                                                        joblib_backend=backend_strategy)
             assert isinstance(scored_sparse_matrix, csr_matrix)
+
     elif method == 'soa' and matrix_form == 'term_freq':
         # getting term-frequency matrix.
         # ATTENTION: the input for TF-IDF MUST be term-frequency matrix. NOT document-frequency matrix
@@ -85,6 +86,7 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
                                                    n_jobs=n_jobs,
                                                    joblib_backend=backend_strategy)
         assert isinstance(scored_sparse_matrix, csr_matrix)
+
     elif method == 'bns':
         if not 'positive' in input_dict:
             raise KeyError('input_dict must have "positive" key')
@@ -100,8 +102,7 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
             joblib_backend=joblib_backend)
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
-        true_class_index = matrix_data_object.label2id_dict[
-            numpy.where(matrix_data_object.label2id_dict['key'] == b'positive')]['value'][0]
+        true_class_index = matrix_data_object.label2id_dict['positive']
         backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)
         scored_sparse_matrix = BNS().fit_transform(
             X=matrix_data_object.csr_matrix_,

@@ -15,7 +15,7 @@ python_version = sys.version_info
 
 if python_version >= (3, 0, 0):
     install_requires = ['six', 'setuptools>=1.0', 'joblib',
-                        'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc', 'cython']
+                        'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc', 'cython', 'scikit-learn']
 
 
 try:

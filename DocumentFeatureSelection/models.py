@@ -5,12 +5,12 @@ from numpy.core.multiarray import array, ndarray
 FeatureType = TypeVar('T', str, Tuple[Any])
 
 class SetDocumentInformation(object):
-    __slots__ = ['feature_frequency', 'label2id', 'feature2id']
+    __slots__ = ['matrix_object', 'label2id', 'feature2id']
 
-    def __init__(self, feature_frequency:List[array],
-                 label2id:ndarray,
-                 feature2id:ndarray):
-        self.feature_frequency = feature_frequency
+    def __init__(self, matrix_object:Union[csr_matrix, ndarray],
+                 label2id:Dict[str,int],
+                 feature2id:Dict[str,int]):
+        self.matrix_object = matrix_object
         self.label2id = label2id
         self.feature2id = feature2id
 
@@ -19,10 +19,10 @@ class DataCsrMatrix(object):
     __slots__ = ['csr_matrix_', 'label2id_dict', 'vocabulary', 'n_docs_distribution', 'n_term_freq_distribution']
 
     def __init__(self, csr_matrix_:csr_matrix,
-                 label2id_dict:array,
-                 vocabulary:ndarray,
-                 n_docs_distribution:array,
-                 n_term_freq_distribution:array):
+                 label2id_dict:Dict[str,int],
+                 vocabulary:Dict[str,int],
+                 n_docs_distribution:ndarray,
+                 n_term_freq_distribution:ndarray):
         self.csr_matrix_ = csr_matrix_
         self.label2id_dict = label2id_dict
         self.vocabulary = vocabulary

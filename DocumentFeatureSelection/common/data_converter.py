@@ -68,11 +68,12 @@ class DataConverter(object):
 
         return True
 
-    def count_term_frequency_distribution(self, labeled_documents:Dict[str,List[Any]], label2id:numpy.core.multiarray.array):
+
+    def count_term_frequency_distribution(self, labeled_documents:Dict[str,List[Any]], label2id:Dict[str,int]):
         """Count term-distribution per label.
         """
         assert isinstance(labeled_documents, dict)
-        assert isinstance(label2id, numpy.ndarray)
+        assert isinstance(label2id, dict)
 
         # count total term-frequency per label
         term_frequency_distribution = {
@@ -85,12 +86,14 @@ class DataConverter(object):
         term_frequency_distribution_list = [0] * len(labeled_documents.keys())
 
         for label_string, n_doc in term_frequency_distribution.items():
-            term_index = label2id[numpy.where(label2id['key'] == label_string.encode('utf-8'))][0]['value']
+            #term_index = label2id[numpy.where(label2id['key'] == label_string.encode('utf-8'))][0]['value']
+            term_index = label2id[label_string]
             term_frequency_distribution_list[term_index] = n_doc
 
         return numpy.array(term_frequency_distribution_list, dtype='i8')
 
-    def count_document_distribution(self, labeled_documents:Dict[str,List[Any]], label2id:numpy.core.multiarray.array)->numpy.ndarray:
+
+    def count_document_distribution(self, labeled_documents:Dict[str,List[Any]], label2id:Dict[str,int])->numpy.ndarray:
         """This method count n(docs) per label.
 
         :param labeled_documents:
@@ -98,7 +101,7 @@ class DataConverter(object):
         :return:
         """
         assert isinstance(labeled_documents, dict)
-        assert isinstance(label2id, numpy.ndarray)
+        assert isinstance(label2id, dict)
 
         # count n(docs) per label
         n_doc_distribution = {
@@ -111,7 +114,8 @@ class DataConverter(object):
         n_doc_distribution_list = [0] * len(labeled_documents.keys())
 
         for label_string, n_doc in n_doc_distribution.items():
-            docs_index = label2id[numpy.where(label2id['key'] == label_string.encode('utf-8'))][0]['value']
+            #docs_index = label2id[numpy.where(label2id['key'] == label_string.encode('utf-8'))][0]['value']
+            docs_index = label2id[label_string]
             n_doc_distribution_list[docs_index] = n_doc
 
         return numpy.array(n_doc_distribution_list, dtype='i8')
@@ -132,25 +136,6 @@ class DataConverter(object):
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
         set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2TermFreqInfo(labeled_documents)
-        assert isinstance(set_document_information, labeledMultiDocs2labeledDocsSet.SetDocumentInformation)
-        logger.info(msg='Get {} feature-dimension from your input data.'.format(len(set_document_information.feature_frequency)))
-        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) >= 100000:
-            joblib_backend = 'threading'
-        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) < 100000:
-            joblib_backend = 'multiprocessing'
-
-        # make set of tuples to construct csr_matrix
-        row, col, data = crs_matrix_constructor.preprocess_csr_matrix(
-            feature_frequency=set_document_information.feature_frequency,
-            vocabulary=set_document_information.feature2id,
-            n_jobs=n_jobs,
-            joblib_backend=joblib_backend
-        )
-        logger.debug(msg='Finished pre-processing before CSR matrix')
-        csr_matrix_ = crs_matrix_constructor.make_csr_objects(
-                row=row, col=col, data=data,
-                n_feature=len(set_document_information.feature2id),
-                n_docs=len(set_document_information.feature_frequency))
 
         # count n(docs) per label
         n_docs_distribution = self.count_document_distribution(
@@ -163,12 +148,8 @@ class DataConverter(object):
             label2id=set_document_information.label2id
         )
 
-        assert isinstance(csr_matrix_, csr_matrix)
-        assert isinstance(set_document_information.label2id, numpy.ndarray)
-        assert isinstance(set_document_information.label2id, numpy.ndarray)
-        assert isinstance(n_docs_distribution, numpy.ndarray)
         return DataCsrMatrix(
-                csr_matrix_,
+                set_document_information.matrix_object,
                 set_document_information.label2id,
                 set_document_information.feature2id,
                 n_docs_distribution, term_frequency_distribution)
@@ -231,27 +212,8 @@ class DataConverter(object):
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
         set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2DocFreqInfo(labeled_documents,
-                                                                                         n_jobs=n_jobs,
-                                                                                         joblib_backend=joblib_backend)
+                                                                                         n_jobs=n_jobs)
         assert isinstance(set_document_information, labeledMultiDocs2labeledDocsSet.SetDocumentInformation)
-        logger.info(msg='Get {} feature-dimension from your input data.'.format(len(set_document_information.feature2id)))
-        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) >= 100000:
-            joblib_backend = 'threading'
-        if joblib_backend == 'auto' and len(set_document_information.feature_frequency) < 100000:
-            joblib_backend = 'multiprocessing'
-
-        # make set of tuples to construct csr_matrix
-        row, col, data = crs_matrix_constructor.preprocess_csr_matrix(
-            feature_frequency=set_document_information.feature_frequency,
-            vocabulary=set_document_information.feature2id,
-            n_jobs=n_jobs,
-            joblib_backend=joblib_backend
-        )
-        logger.debug(msg='Finished pre-processing before CSR matrix')
-        csr_matrix_ = crs_matrix_constructor.make_csr_objects(
-                row=row, col=col, data=data,
-                n_feature=len(set_document_information.feature2id),
-                n_docs=len(set_document_information.feature_frequency))
 
         # count n(docs) per label
         n_docs_distribution = self.count_document_distribution(
@@ -263,13 +225,8 @@ class DataConverter(object):
             labeled_documents=labeled_documents,
             label2id=set_document_information.label2id
         )
-
-        assert isinstance(csr_matrix_, csr_matrix)
-        assert isinstance(set_document_information.label2id, numpy.ndarray)
-        assert isinstance(set_document_information.feature2id, numpy.ndarray)
-        assert isinstance(n_docs_distribution, numpy.ndarray)
         return DataCsrMatrix(
-                csr_matrix_,
+                set_document_information.matrix_object,
                 set_document_information.label2id,
                 set_document_information.feature2id,
                 n_docs_distribution, term_frequency_distribution)
