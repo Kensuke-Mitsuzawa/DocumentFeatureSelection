@@ -72,9 +72,6 @@ def pmi(X:csr_matrix,
         temp4 = n_00/n_total_doc * math.log((n_total_doc*n_00)/((n_00+n_01)*(n_00+n_10)), 2)
         score = temp1 + temp2 + temp3 + temp4
 
-        if score < 0:
-            raise Exception('score under 0 is detected. Something strange in Input matrix. Check your input matrix.')
-
         return score
 
 
@@ -105,12 +102,12 @@ class PMI(object):
             import pyximport; pyximport.install()
             from DocumentFeatureSelection.pmi.pmi_cython import main
             logger.warning(msg='n_jobs parameter is invalid when use_cython=True')
-            print(X.toarray())
             pmi_score_csr_source = main(X=X,
                                         n_docs_distribution=n_docs_distribution,
                                         sample_range=sample_range,
                                         feature_range=feature_range,
-                                        n_total_doc=n_total_document)
+                                        n_total_doc=n_total_document,
+                                        verbose=False)
 
         else:
             self.pmi = pmi

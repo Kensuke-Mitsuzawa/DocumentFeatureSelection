@@ -21,7 +21,7 @@ def pmi_with_parallel(input_corpus):
         joblib_backend='multiprocessing'
     )
     elapsed_time = time.time() - start
-    print ("elapsed_time with multiprocess:{}".format(elapsed_time)) + "[sec]"
+    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
 
 
 #@profile
@@ -35,7 +35,7 @@ def pmi_with_threading(input_corpus):
         joblib_backend='threading'
     )
     elapsed_time = time.time() - start
-    print ("elapsed_time with multithreading:{}".format(elapsed_time)) + "[sec]"
+    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
 
 
 def pmi_with_cython(input_corpus):
@@ -48,7 +48,7 @@ def pmi_with_cython(input_corpus):
         use_cython=True
     )
     elapsed_time = time.time() - start
-    print ("elapsed_time with multithreading:{}".format(elapsed_time)) + "[sec]"
+    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
 
 from nltk.corpus import gutenberg
 from nltk.corpus import webtext
@@ -68,5 +68,5 @@ input_corpus = {
     }
 
 pmi_with_cython(input_corpus)
-pmi_with_parallel(input_corpus)
-pmi_with_threading(input_corpus)
+#pmi_with_parallel(input_corpus)
+#pmi_with_threading(input_corpus)

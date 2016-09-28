@@ -66,7 +66,8 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
             scored_sparse_matrix = SOA().fit_transform(X=matrix_data_object.csr_matrix_,
                                                        unit_distribution=matrix_data_object.n_docs_distribution,
                                                        n_jobs=n_jobs,
-                                                       joblib_backend=backend_strategy)
+                                                       joblib_backend=backend_strategy,
+                                                       use_cython=use_cython)
             assert isinstance(scored_sparse_matrix, csr_matrix)
 
     elif method == 'soa' and matrix_form == 'term_freq':

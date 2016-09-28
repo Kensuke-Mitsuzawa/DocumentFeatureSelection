@@ -1,13 +1,15 @@
 import math
 import scipy
 cimport numpy as np
+from cpython cimport bool
 
 cdef float pmi(np.ndarray[np.float64_t, ndim=2] X,
         int n_samples,
         np.ndarray[np.int64_t, ndim=1] n_docs_distribution,
         int n_total_doc,
         int feature_index,
-        int sample_index):
+        int sample_index,
+        bool verbose):
     """get PMI score for given feature & sample index
     """
     cdef i
@@ -33,9 +35,8 @@ cdef float pmi(np.ndarray[np.float64_t, ndim=2] X,
         temp4 = n_00/n_total_doc * math.log((n_total_doc*n_00)/((n_00+n_01)*(n_00+n_10)), 2)
         score = temp1 + temp2 + temp3 + temp4
 
-        if score < 0:
-            print(score)
-            raise Exception('PMI score={}. Score under 0 is detected. Something strange in Input matrix. Check your input matrix.'.format(score))
+        if verbose:
+            print('score={}, temp1={}, temp2={}, temp3={}, temp4={}, n11={}, n10={}, n01={}, n00={}, n_total_docs={}'.format(score, temp1, temp2, temp3, temp4, n_11, n_10, n_01, n_00, n_total_doc))
 
         return score
 
@@ -44,7 +45,8 @@ def main(X,
         np.ndarray[np.int64_t, ndim=1] n_docs_distribution,
         int n_total_doc,
         sample_range,
-        feature_range):
+        feature_range,
+        bool verbose=False):
     """What you can do
     - calculate PMI score based on given data.
     - The function returns list of tuple, whose element is (sample_index, feature_index, score)
@@ -61,7 +63,7 @@ def main(X,
         (
             sample_index,
             feature_index,
-            pmi(X, n_samples, n_docs_distribution, n_total_doc, feature_index, sample_index)
+            pmi(X, n_samples, n_docs_distribution, n_total_doc, feature_index, sample_index, verbose)
          )
         for sample_index in sample_range
         for feature_index in feature_range
