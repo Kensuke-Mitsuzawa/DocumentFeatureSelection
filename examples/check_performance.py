@@ -48,7 +48,7 @@ def pmi_with_cython(input_corpus):
         use_cython=True
     )
     elapsed_time = time.time() - start
-    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
+    print ("elapsed_time with cython:{} [sec]".format(elapsed_time))
 
 from nltk.corpus import gutenberg
 from nltk.corpus import webtext
@@ -68,5 +68,5 @@ input_corpus = {
     }
 
 pmi_with_cython(input_corpus)
-#pmi_with_parallel(input_corpus)
+pmi_with_parallel(input_corpus)
 #pmi_with_threading(input_corpus)

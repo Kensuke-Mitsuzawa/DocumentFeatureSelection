@@ -66,7 +66,7 @@ def main(X,
         (
             sample_index,
             feature_index,
-            soa(X, n_samples, n_docs_distribution, feature_index, sample_index, verbose)
+            soa(X, n_docs_distribution, n_total_doc, feature_index, sample_index, verbose)
          )
         for sample_index in sample_range
         for feature_index in feature_range
