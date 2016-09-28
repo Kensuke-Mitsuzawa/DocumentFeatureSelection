@@ -152,5 +152,9 @@ Removed a bug when calling n_gram method of DataConverter
 
 * A bug in calculating TF-IDF score, this bug was resolved.
 
-## 1.3 2016/9/
+## 1.3 2016/9/28
+
+* Resolved bottleneck poins in pre-processing
+    * Introduced dict-vectorising in ScikitLearn
+    * Introduced Cython in calculating PMI \& SOA. You can call them with `use_cython=True` flag. See `examples/example_python3.py`
 
