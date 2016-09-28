@@ -7,10 +7,31 @@ __version__ = '1.3'
 
 import sys
 from setuptools import setup, find_packages
-import numpy
-from Cython.Build import cythonize
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
+
+# Flags to compile Cython code or use already compiled code
+# --------------------------------------------------------------------------------------------------------
+try:
+    from Cython.Build import cythonize
+    from distutils.extension import Extension
+    from Cython.Distutils import build_ext
+    import numpy
+except ImportError:
+    use_cython = False
+else:
+    use_cython = True
+
+cmdclass = { }
+ext_modules = [ ]
+if use_cython:
+    ext_modules += [
+        Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.pyx" ]),
+    ]
+    cmdclass.update({ 'build_ext': build_ext })
+else:
+    ext_modules += [
+        Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.c" ]),
+    ]
+# --------------------------------------------------------------------------------------------------------
 
 
 python_version = sys.version_info
@@ -18,6 +39,8 @@ python_version = sys.version_info
 if python_version >= (3, 0, 0):
     install_requires = ['six', 'setuptools>=1.0', 'joblib',
                         'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc', 'cython', 'scikit-learn']
+else:
+    raise Exception('This package does NOT support Python2.x')
 
 try:
     import pypandoc
@@ -53,7 +76,7 @@ setup(
     install_requires=install_requires,
     setup_requires=['six', 'setuptools>=1.0'],
     classifiers=[],
-    cmdclass={'build_ext': build_ext},
-    ext_modules=cythonize("DocumentFeatureSelection/pmi/pmi_cython.pyx"),
+    cmdclass=cmdclass,
+    ext_modules=ext_modules,
     include_dirs = [numpy.get_include()]
 )
