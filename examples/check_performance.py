@@ -1,6 +1,7 @@
 from DocumentFeatureSelection import interface
 import nltk
 import logging
+import time
 try:
     import line_profiler
 except:
@@ -9,19 +10,23 @@ logger = logging.getLogger('sample usage')
 logger.level = logging.DEBUG
 
 
-@profile
+#@profile
 def pmi_with_parallel(input_corpus):
     logging.debug(msg='With multiprocessing backend')
+    start = time.time()
     scored_matrix_obj = interface.run_feature_selection(
         input_dict=input_corpus,
         method='pmi',
         n_jobs=-1,
         joblib_backend='multiprocessing'
     )
+    elapsed_time = time.time() - start
+    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
 
 
-@profile
+#@profile
 def pmi_with_threading(input_corpus):
+    start = time.time()
     logging.debug(msg='With threading backend')
     scored_matrix_obj = interface.run_feature_selection(
         input_dict=input_corpus,
@@ -29,6 +34,21 @@ def pmi_with_threading(input_corpus):
         n_jobs=-1,
         joblib_backend='threading'
     )
+    elapsed_time = time.time() - start
+    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
+
+
+def pmi_with_cython(input_corpus):
+    logging.debug(msg='With cython is True')
+    start = time.time()
+    scored_matrix_obj = interface.run_feature_selection(
+        input_dict=input_corpus,
+        method='pmi',
+        n_jobs=-1,
+        use_cython=True
+    )
+    elapsed_time = time.time() - start
+    print ("elapsed_time with cython:{} [sec]".format(elapsed_time))
 
 from nltk.corpus import gutenberg
 from nltk.corpus import webtext
@@ -47,5 +67,6 @@ input_corpus = {
     'gutenberg': list(gutenberg_corpus)
     }
 
+pmi_with_cython(input_corpus)
 pmi_with_parallel(input_corpus)
-pmi_with_threading(input_corpus)
+#pmi_with_threading(input_corpus)

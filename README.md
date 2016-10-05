@@ -92,9 +92,6 @@ or
 
 ```George Forman, "An Extensive Empirical Study of Feature Selection Metrics for Text Classification",Journal of Machine Learning Research 3 (2003) 1289-1305```
  
- 
-
-
 
 # Requirement
 
@@ -107,21 +104,34 @@ or
 
 `python setup.py install`
 
+### Note
+
+You might see error message during running this command, such as
+
+```
+We failed to install numpy automatically. Try installing numpy manually or Try anaconda distribution.
+```
+
+This is because `setup.py` tries to instal numpy and scipy with `pip`, however it fails. 
+We need numpy and scipy before we install `scikit-learn`.
+
+In this case, you take following choice
+
+* You install `numpy` and `scipy` manually
+* You use `anaconda` python distribution. Please visit [their site](https://www.continuum.io/downloads).
 
 # Examples
 
 See scripts in `examples/`
 
-# Performance
-
-With my MacBookPro (late 2015) and version 1.1.
-
-And input data has 98,600 feature dimensions.
-
-- PMI takes around 6 minutes (with both of multiprocessing and multithreading)
-
 
 # Change log
+
+For your reference I checked performance under following environment,
+ 
+- MacBookPro (late 2015) 3.1 GHz Intel Core i7, 16 GB 1867 MHz DDR3
+- input data has 98,600 feature dimensions.
+
 
 ## 0.6 2016/04/02
 
@@ -148,7 +158,17 @@ Removed a bug when calling n_gram method of DataConverter
 
 * Resolved bottleneck point in pre-processing
 * Fixed a bug which n_jobs parameter does not work in interface
+* PMI takes around 6 minutes (with both of multiprocessing and multithreading)
 
 ## 1.2 2016/9/16
 
 * A bug in calculating TF-IDF score, this bug was resolved.
+
+## 1.3 2016/9/28
+
+* Resolved bottleneck poins in pre-processing
+    * Introduced dict-vectorising in ScikitLearn
+    * Introduced Cython in calculating PMI \& SOA. You can call them with `use_cython=True` flag. See `examples/example_python3.py`
+* Performance
+    * Cython PMI takes 11.87 sec.
+    * Python multiprocessing PMI takes 513.541 sec. (8.55 min.)

@@ -5,7 +5,7 @@ from DocumentFeatureSelection import interface
 import logging
 import pprint
 logger = logging.getLogger('sample usage')
-logger.level = logging.DEBUG
+logger.level = logging.ERROR
 
 
 # ======================================================================================================
@@ -31,15 +31,40 @@ input_dict = {
     ]
 }
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# tf idf
+
+tf_idf_scored_object = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='tf_idf',
+    ngram=1,
+    n_jobs=5
+)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# pmi
 pmi_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='pmi',
     ngram=1,
-    n_jobs=5
+    n_jobs=1,
+    use_cython=False
 )
 pprint.pprint(pmi_scored_object.ScoreMatrix2ScoreDictionary())
 
+# you can use cython version pmi also
+# !Warning! The output value with "use_cython=True" is veeeery little different such as the 10th decimal place.
+pmi_scored_object_cython = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='pmi',
+    ngram=1,
+    n_jobs=1,
+    use_cython=True
+)
+pprint.pprint(pmi_scored_object_cython.ScoreMatrix2ScoreDictionary())
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# soa
 soa_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='soa',
@@ -48,15 +73,37 @@ soa_scored_object = interface.run_feature_selection(
 )
 pprint.pprint(soa_scored_object.ScoreMatrix2ScoreDictionary())
 
-
-tf_idf_scored_object = interface.run_feature_selection(
+soa_scored_object_cython = interface.run_feature_selection(
     input_dict=input_dict,
-    method='tf_idf',
+    method='soa',
     ngram=1,
-    n_jobs=5
+    n_jobs=1,
+    use_cython=True
 )
-pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
+pprint.pprint(soa_scored_object_cython.ScoreMatrix2ScoreDictionary())
 
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# bns
+input_dict = {
+    "positive": [
+        ["I", "aa", "aa", "aa", "aa", "aa"],
+        ["bb", "aa", "aa", "aa", "aa", "aa"],
+        ["I", "aa", "hero", "some", "ok", "aa"]
+    ],
+    "negative": [
+        ["bb", "bb", "bb"],
+        ["bb", "bb", "bb"],
+        ["hero", "ok", "bb"],
+        ["hero", "cc", "bb"],
+    ]
+}
+bns_scored_object = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='bns',
+    n_jobs=1
+)
+pprint.pprint(bns_scored_object.ScoreMatrix2ScoreDictionary())
 
 
 # ======================================================================================================
@@ -77,7 +124,18 @@ input_dict_tuple_feature = {
     ]
 }
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# tf idf
+tf_idf_scored_object = interface.run_feature_selection(
+    input_dict=input_dict_tuple_feature,
+    method='tf_idf',
+    n_jobs=5
+)
+pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
 
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# pmi
 pmi_scored_object = interface.run_feature_selection(
     input_dict=input_dict_tuple_feature,
     method='pmi',
@@ -86,6 +144,17 @@ pmi_scored_object = interface.run_feature_selection(
 pprint.pprint(pmi_scored_object.ScoreMatrix2ScoreDictionary())
 
 
+pmi_scored_object_cython = interface.run_feature_selection(
+    input_dict=input_dict_tuple_feature,
+    method='pmi',
+    n_jobs=1,
+    use_cython=True
+)
+pprint.pprint(pmi_scored_object_cython.ScoreMatrix2ScoreDictionary())
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# soa
 soa_scored_object = interface.run_feature_selection(
     input_dict=input_dict_tuple_feature,
     method='soa',
@@ -94,9 +163,36 @@ soa_scored_object = interface.run_feature_selection(
 pprint.pprint(soa_scored_object.ScoreMatrix2ScoreDictionary())
 
 
-tf_idf_scored_object = interface.run_feature_selection(
+soa_scored_object_cython = interface.run_feature_selection(
     input_dict=input_dict_tuple_feature,
-    method='tf_idf',
+    method='soa',
+    n_jobs=1,
+    use_cython=True
+)
+pprint.pprint(soa_scored_object_cython.ScoreMatrix2ScoreDictionary())
+
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# bns
+input_dict_tuple_feature = {
+    "positive": [
+        [ (("he", "N"), ("is", "V")), (("very", "ADV"), ("good", "ADJ")), (("guy", "N"),) ],
+        [ (("you", "N"), ("are", "V")), (("very", "ADV"), ("awesome", "ADJ")), (("guy", "N"),) ],
+        [ (("i", "N"), ("am", "V")), (("very", "ADV"), ("good", "ADJ")), (("guy", "N"),) ]
+    ],
+    "negative": [
+        [ (("she", "N"), ("is", "V")), (("very", "ADV"), ("good", "ADJ")), (("girl", "N"),) ],
+        [ (("you", "N"), ("are", "V")), (("very", "ADV"), ("awesome", "ADJ")), (("girl", "N"),) ],
+        [ (("she", "N"), ("is", "V")), (("very", "ADV"), ("good", "ADJ")), (("guy", "N"),) ]
+    ]
+}
+
+
+bns_scored_object = interface.run_feature_selection(
+    input_dict=input_dict_tuple_feature,
+    method='bns',
     n_jobs=5
 )
-pprint.pprint(tf_idf_scored_object.ScoreMatrix2ScoreDictionary())
+pprint.pprint(bns_scored_object.ScoreMatrix2ScoreDictionary())

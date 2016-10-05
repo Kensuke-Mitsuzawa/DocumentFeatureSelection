@@ -8,6 +8,7 @@ from DocumentFeatureSelection import init_logger
 from typing import List, Dict, Any, Union, Tuple
 from scipy.sparse.csr import csr_matrix
 import logging
+import numpy
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 METHOD_NAMES = ['soa', 'pmi', 'tf_idf', 'bns']
 N_FEATURE_SWITCH_STRATEGY = 1000000
@@ -25,7 +26,8 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
                           ngram:int=1,
                           n_jobs:int=1,
                           joblib_backend='auto',
-                          matrix_form=None)->ScoredResultObject:
+                          matrix_form=None,
+                          use_cython:bool=False)->ScoredResultObject:
     if not method in METHOD_NAMES:
         raise Exception('method name must be either of {}. Yours: {}'.format(METHOD_NAMES, method))
 
@@ -56,15 +58,18 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
             scored_sparse_matrix = PMI().fit_transform(X=matrix_data_object.csr_matrix_,
                                                        n_docs_distribution=matrix_data_object.n_docs_distribution,
                                                        n_jobs=n_jobs,
-                                                       joblib_backend=backend_strategy)
+                                                       joblib_backend=backend_strategy,
+                                                       use_cython=use_cython)
             assert isinstance(scored_sparse_matrix, csr_matrix)
         elif method == 'soa':
             backend_strategy = decide_joblib_strategy(matrix_data_object.vocabulary)
             scored_sparse_matrix = SOA().fit_transform(X=matrix_data_object.csr_matrix_,
                                                        unit_distribution=matrix_data_object.n_docs_distribution,
                                                        n_jobs=n_jobs,
-                                                       joblib_backend=backend_strategy)
+                                                       joblib_backend=backend_strategy,
+                                                       use_cython=use_cython)
             assert isinstance(scored_sparse_matrix, csr_matrix)
+
     elif method == 'soa' and matrix_form == 'term_freq':
         # getting term-frequency matrix.
         # ATTENTION: the input for TF-IDF MUST be term-frequency matrix. NOT document-frequency matrix
@@ -82,6 +87,7 @@ def run_feature_selection(input_dict:Dict[str,List[List[Union[str,Tuple[Any]]]]]
                                                    n_jobs=n_jobs,
                                                    joblib_backend=backend_strategy)
         assert isinstance(scored_sparse_matrix, csr_matrix)
+
     elif method == 'bns':
         if not 'positive' in input_dict:
             raise KeyError('input_dict must have "positive" key')
