@@ -92,9 +92,6 @@ or
 
 ```George Forman, "An Extensive Empirical Study of Feature Selection Metrics for Text Classification",Journal of Machine Learning Research 3 (2003) 1289-1305```
  
- 
-
-
 
 # Requirement
 
@@ -107,6 +104,21 @@ or
 
 `python setup.py install`
 
+### Note
+
+You might see error message during running this command, such as
+
+```
+We failed to install numpy automatically. Try installing numpy manually or Try anaconda distribution.
+```
+
+This is because `setup.py` tries to instal numpy and scipy with `pip`, however it fails. 
+We need numpy and scipy before we install `scikit-learn`.
+
+In this case, you take following choice
+
+* You install `numpy` and `scipy` manually
+* You use `anaconda` python distribution. Please visit [their site](https://www.continuum.io/downloads).
 
 # Examples
 
@@ -157,4 +169,6 @@ Removed a bug when calling n_gram method of DataConverter
 * Resolved bottleneck poins in pre-processing
     * Introduced dict-vectorising in ScikitLearn
     * Introduced Cython in calculating PMI \& SOA. You can call them with `use_cython=True` flag. See `examples/example_python3.py`
-
+* Performance
+    * Cython PMI takes 11.87 sec.
+    * Python multiprocessing PMI takes 513.541 sec. (8.55 min.)

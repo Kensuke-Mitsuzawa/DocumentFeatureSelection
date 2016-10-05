@@ -6,15 +6,16 @@ __author__ = 'kensuke-mi'
 __version__ = '1.3'
 
 import sys
+import pip
 from setuptools import setup, find_packages
+from distutils.extension import Extension
 
-# Flags to compile Cython code or use already compiled code
+
 # --------------------------------------------------------------------------------------------------------
+# Flags to compile Cython code or use already compiled code
 try:
     from Cython.Build import cythonize
-    from distutils.extension import Extension
     from Cython.Distutils import build_ext
-    import numpy
 except ImportError:
     use_cython = False
 else:
@@ -32,14 +33,34 @@ else:
     ext_modules += [
         Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.c" ]),
     ]
-# --------------------------------------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------------------------------------
+# try to install numpy automatically because sklearn requires the status where numpy is already installed
+try:
+    import numpy
+except ImportError:
+    use_numpy_include_dirs = False
+    try:
+        pip.main(['install', 'numpy'])
+    except:
+        raise Exception('We failed to install numpy automatically. Try installing numpy manually or Try anaconda distribution.')
+# --------------------------------------------------------------------------------------------------------
+# try to install scipy automatically because sklearn requires the status where scipy is already installed
+try:
+    import scipy
+except ImportError:
+    use_numpy_include_dirs = False
+    try:
+        pip.main(['install', 'scipy'])
+    except:
+        raise Exception('We failed to install scipy automatically. Try installing scipy manually or Try anaconda distribution.')
+# --------------------------------------------------------------------------------------------------------
 
 python_version = sys.version_info
 
 if python_version >= (3, 0, 0):
-    install_requires = ['six', 'setuptools>=1.0', 'joblib',
-                        'scipy', 'nltk', 'scikit-learn', 'numpy', 'pypandoc', 'cython', 'scikit-learn']
+    install_requires = ['six', 'setuptools>=1.0', 'joblib', 'numpy',
+                        'scipy', 'nltk', 'scikit-learn', 'pypandoc', 'cython']
 else:
     raise Exception('This package does NOT support Python2.x')
 
@@ -75,7 +96,8 @@ setup(
     zip_safe=False,
     test_suite='tests.all_tests.suite',
     install_requires=install_requires,
-    setup_requires=['six', 'setuptools>=1.0'],
+    tests_require=install_requires,
+    setup_requires=['six', 'setuptools>=1.0', 'pip'],
     classifiers=[],
     cmdclass=cmdclass,
     ext_modules=ext_modules,
