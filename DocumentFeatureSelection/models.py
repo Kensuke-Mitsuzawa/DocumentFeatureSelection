@@ -2,7 +2,10 @@ from typing import Dict, List, Tuple, Union, Any, TypeVar
 from scipy.sparse.csr import csr_matrix
 from DocumentFeatureSelection.common import utils
 from numpy.core.multiarray import array, ndarray
+from shelve import DbfilenameShelf
 FeatureType = TypeVar('T', str, Tuple[Any])
+AvailableInputTypes = TypeVar('T', DbfilenameShelf, Dict[str,List[List[Union[str,Tuple[Any]]]]])
+
 
 class SetDocumentInformation(object):
     __slots__ = ['matrix_object', 'label2id', 'feature2id']
@@ -16,6 +19,16 @@ class SetDocumentInformation(object):
 
 
 class DataCsrMatrix(object):
+    """
+    vocaburary is, dict object with token: feature_id
+    >>> {'I_aa_hero': 4, 'xx_xx_cc': 1, 'I_aa_aa': 2, 'bb_aa_aa': 3, 'cc_cc_bb': 8}
+
+    label_group_dict is, dict object with label_name: label_id
+    >>> {'label_b': 0, 'label_c': 1, 'label_a': 2}
+
+    csr_matrix is, sparse matrix from scipy.sparse
+    """
+
     __slots__ = ['csr_matrix_', 'label2id_dict', 'vocabulary', 'n_docs_distribution', 'n_term_freq_distribution']
 
     def __init__(self, csr_matrix_:csr_matrix,

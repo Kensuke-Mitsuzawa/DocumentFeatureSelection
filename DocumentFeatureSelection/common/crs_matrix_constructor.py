@@ -52,7 +52,7 @@ def SUB_FUNC_make_value_pairs(doc_id:int, doc_freq_obj:numpy.ndarray, vocabulary
     return value_pairs
 
 
-def make_csr_list(value_position_list:List[numpy.array])->Tuple[List[int], List[int], List[int]]:
+def make_csr_list(value_position_list:List[numpy.ndarray])->Tuple[List[int], List[int], List[int]]:
     data = []
     row = []
     col = []

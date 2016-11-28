@@ -172,3 +172,8 @@ Removed a bug when calling n_gram method of DataConverter
 * Performance
     * Cython PMI takes 11.87 sec.
     * Python multiprocessing PMI takes 513.541 sec. (8.55 min.)
+    
+## 1.3.2 2016/11/29
+
+* New input data type: `shelve.DbfilenameShelf`
+
