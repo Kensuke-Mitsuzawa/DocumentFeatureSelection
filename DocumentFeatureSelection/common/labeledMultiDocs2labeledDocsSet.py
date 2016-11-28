@@ -57,6 +57,7 @@ def judge_feature_type(docs:List[List[Union[str, Tuple[Any]]]])->str:
             elif isinstance(feature, tuple):
                 type_flag = 'tuple'
             else:
+                logger.error(msg=docs)
                 raise TypeError('Feature object should be either of str or tuple')
     return type_flag
 

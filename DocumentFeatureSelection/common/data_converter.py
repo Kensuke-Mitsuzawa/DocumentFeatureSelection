@@ -27,9 +27,11 @@ class DataConverter(object):
         - This function checks input data structure
         """
         assert isinstance(labeled_documents, (DbfilenameShelf, dict))
-        for key in labeled_documents.keys():
+        for key, value in labeled_documents.items():
             docs_in_label = labeled_documents[key]
-            assert isinstance(docs_in_label, list)
+            if not isinstance(docs_in_label, list):
+                logger.error(msg=docs_in_label)
+                raise TypeError('It expects list object. But your object has {}'.format(type(docs_in_label)))
             for doc in docs_in_label:
                 for t in doc:
                     if isinstance(t, (str)):

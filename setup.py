@@ -60,7 +60,7 @@ python_version = sys.version_info
 
 if python_version >= (3, 0, 0):
     install_requires = ['six', 'setuptools>=1.0', 'joblib', 'numpy',
-                        'scipy', 'nltk', 'scikit-learn', 'pypandoc', 'cython']
+                        'scipy', 'nltk', 'scikit-learn', 'pypandoc', 'cython', 'sqlitedict']
 else:
     raise Exception('This package does NOT support Python2.x')
 
