@@ -2,7 +2,82 @@ from typing import Dict, List, Tuple, Union, Any, TypeVar
 from scipy.sparse.csr import csr_matrix
 from DocumentFeatureSelection.common import utils
 from numpy.core.multiarray import array, ndarray
-FeatureType = TypeVar('T', str, Tuple[Any])
+from sqlitedict import SqliteDict
+import pickle, json, csv, os, shutil
+
+# this class is from https://code.activestate.com/recipes/576642/
+class PersistentDict(dict):
+    ''' Persistent dictionary with an API compatible with shelve and anydbm.
+
+    The dict is kept in memory, so the dictionary operations run as fast as
+    a regular dictionary.
+
+    Write to disk is delayed until close or sync (similar to gdbm's fast mode).
+
+    Input file format is automatically discovered.
+    Output file format is selectable between pickle, json, and csv.
+    All three serialization formats are backed by fast C implementations.
+
+    '''
+
+    def __init__(self, filename, flag='c', mode=None, format='pickle', *args, **kwds):
+        self.flag = flag                    # r=readonly, c=create, or n=new
+        self.mode = mode                    # None or an octal triple like 0644
+        self.format = format                # 'csv', 'json', or 'pickle'
+        self.filename = filename
+        if flag != 'n' and os.access(filename, os.R_OK):
+            fileobj = open(filename, 'rb' if format=='pickle' else 'r')
+            with fileobj:
+                self.load(fileobj)
+        dict.__init__(self, *args, **kwds)
+
+    def sync(self):
+        'Write dict to disk'
+        if self.flag == 'r':
+            return
+        filename = self.filename
+        tempname = filename + '.tmp'
+        fileobj = open(tempname, 'wb' if self.format=='pickle' else 'w')
+        try:
+            self.dump(fileobj)
+        except Exception:
+            os.remove(tempname)
+            raise
+        finally:
+            fileobj.close()
+        shutil.move(tempname, self.filename)    # atomic commit
+        if self.mode is not None:
+            os.chmod(self.filename, self.mode)
+
+    def close(self):
+        self.sync()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
+
+    def dump(self, fileobj):
+        if self.format == 'csv':
+            csv.writer(fileobj).writerows(self.items())
+        elif self.format == 'json':
+            json.dump(self, fileobj, separators=(',', ':'))
+        elif self.format == 'pickle':
+            pickle.dump(dict(self), fileobj, 2)
+        else:
+            raise NotImplementedError('Unknown format: ' + repr(self.format))
+
+    def load(self, fileobj):
+        # try formats from most restrictive to least restrictive
+        for loader in (pickle.load, json.load, csv.reader):
+            fileobj.seek(0)
+            try:
+                return self.update(loader(fileobj))
+            except Exception:
+                pass
+        raise ValueError('File not in a supported format')
+
 
 class SetDocumentInformation(object):
     __slots__ = ['matrix_object', 'label2id', 'feature2id']
@@ -16,6 +91,16 @@ class SetDocumentInformation(object):
 
 
 class DataCsrMatrix(object):
+    """
+    vocaburary is, dict object with token: feature_id
+    >>> {'I_aa_hero': 4, 'xx_xx_cc': 1, 'I_aa_aa': 2, 'bb_aa_aa': 3, 'cc_cc_bb': 8}
+
+    label_group_dict is, dict object with label_name: label_id
+    >>> {'label_b': 0, 'label_c': 1, 'label_a': 2}
+
+    csr_matrix is, sparse matrix from scipy.sparse
+    """
+
     __slots__ = ['csr_matrix_', 'label2id_dict', 'vocabulary', 'n_docs_distribution', 'n_term_freq_distribution']
 
     def __init__(self, csr_matrix_:csr_matrix,
@@ -96,3 +181,9 @@ class ScoredResultObject(object):
             raise ValueError('outformat must be either of {dict, items}')
 
         return out_format_structure
+
+
+FeatureType = TypeVar('T', str, Tuple[Any])
+AvailableInputTypes = TypeVar('T', PersistentDict,
+                              SqliteDict,
+                              Dict[str,List[List[Union[str,Tuple[Any]]]]])

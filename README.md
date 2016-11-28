@@ -168,7 +168,13 @@ Removed a bug when calling n_gram method of DataConverter
 
 * Resolved bottleneck poins in pre-processing
     * Introduced dict-vectorising in ScikitLearn
-    * Introduced Cython in calculating PMI \& SOA. You can call them with `use_cython=True` flag. See `examples/example_python3.py`
+    * Introduced Cython in calculating PMI \& SOA. You can call them with `use_cython=True` flag. See `examples/basic_example.py`
 * Performance
     * Cython PMI takes 11.87 sec.
     * Python multiprocessing PMI takes 513.541 sec. (8.55 min.)
+    
+## 1.3.2 2016/11/29
+
+* You can put persisted-dict-object on disk-drive instead of dict-object on memory.
+    * You can put huge dict object as data-source of `interface.run_feature_selection()`
+    * See example `examples/huge_data_example.py`
