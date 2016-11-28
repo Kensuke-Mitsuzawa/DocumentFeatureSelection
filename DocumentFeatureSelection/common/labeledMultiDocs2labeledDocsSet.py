@@ -1,9 +1,9 @@
 from collections import Counter
 from DocumentFeatureSelection.models import SetDocumentInformation, AvailableInputTypes
 from DocumentFeatureSelection import init_logger
-from shelve import DbfilenameShelf
 from sklearn.feature_extraction import DictVectorizer
 from typing import Dict, List, Tuple, Any, Union
+from sqlitedict import SqliteDict
 import logging
 import joblib
 import itertools
@@ -32,7 +32,7 @@ def generate_document_dict(document_key:str,
 def multiDocs2TermFreqInfo(labeled_documents:AvailableInputTypes):
     """This function generates information to construct term-frequency matrix
     """
-    assert isinstance(labeled_documents, (DbfilenameShelf, dict))
+    assert isinstance(labeled_documents, (SqliteDict, dict))
 
     counted_frequency = [(label, Counter(list(itertools.chain.from_iterable(documents))))
                          for label, documents in labeled_documents.items()]
@@ -66,7 +66,7 @@ def multiDocs2DocFreqInfo(labeled_documents:AvailableInputTypes,
                           n_jobs:int=1)->SetDocumentInformation:
     """This function generates information for constructing document-frequency matrix.
     """
-    assert isinstance(labeled_documents, (DbfilenameShelf, dict))
+    assert isinstance(labeled_documents, (SqliteDict, dict))
     type_flag = set([judge_feature_type(docs) for docs in labeled_documents.values()])
     assert len(type_flag)==1
 

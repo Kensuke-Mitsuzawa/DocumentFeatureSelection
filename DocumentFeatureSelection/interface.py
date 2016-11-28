@@ -5,6 +5,7 @@ from DocumentFeatureSelection.pmi.PMI_python3 import PMI
 from DocumentFeatureSelection.tf_idf.tf_idf import TFIDF
 from DocumentFeatureSelection.bns.bns_python3 import BNS
 from DocumentFeatureSelection import init_logger
+from sqlitedict import SqliteDict
 from typing import Dict
 from scipy.sparse.csr import csr_matrix
 import logging

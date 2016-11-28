@@ -4,10 +4,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from DocumentFeatureSelection.common import utils, labeledMultiDocs2labeledDocsSet, ngram_constructor
-from scipy.sparse import csr_matrix
 from DocumentFeatureSelection.models import DataCsrMatrix, FeatureType, AvailableInputTypes
 from DocumentFeatureSelection import init_logger
-from shelve import DbfilenameShelf
+from scipy.sparse import csr_matrix
+from sqlitedict import SqliteDict
 import logging
 import sys
 import numpy
@@ -26,7 +26,7 @@ class DataConverter(object):
         """* what you can do
         - This function checks input data structure
         """
-        assert isinstance(labeled_documents, (DbfilenameShelf, dict))
+        assert isinstance(labeled_documents, (SqliteDict, dict))
         for key, value in labeled_documents.items():
             docs_in_label = labeled_documents[key]
             if not isinstance(docs_in_label, list):
@@ -46,7 +46,7 @@ class DataConverter(object):
     def count_term_frequency_distribution(self, labeled_documents:AvailableInputTypes, label2id:Dict[str,int]):
         """Count term-distribution per label.
         """
-        assert isinstance(labeled_documents, (DbfilenameShelf, dict))
+        assert isinstance(labeled_documents, (SqliteDict, dict))
         assert isinstance(label2id, dict)
 
         # count total term-frequency per label
@@ -57,7 +57,9 @@ class DataConverter(object):
         }
 
         # make list of distribution
-        term_frequency_distribution_list = [0] * len(labeled_documents.keys())
+        #term_frequency_distribution_list = [0] * len(labeled_documents.keys())
+        # TODO
+        term_frequency_distribution_list = [0] * len(labeled_documents)
 
         for label_string, n_doc in term_frequency_distribution.items():
             #term_index = label2id[numpy.where(label2id['key'] == label_string.encode('utf-8'))][0]['value']
@@ -69,7 +71,7 @@ class DataConverter(object):
     def count_document_distribution(self, labeled_documents:AvailableInputTypes, label2id:Dict[str,int])->numpy.ndarray:
         """This method count n(docs) per label.
         """
-        assert isinstance(labeled_documents, (DbfilenameShelf, dict))
+        assert isinstance(labeled_documents, (SqliteDict, dict))
         assert isinstance(label2id, dict)
 
         # count n(docs) per label
@@ -80,7 +82,9 @@ class DataConverter(object):
         }
 
         # make list of distribution
-        n_doc_distribution_list = [0] * len(labeled_documents.keys())
+        # TODO
+        #n_doc_distribution_list = [0] * len(labeled_documents.keys())
+        n_doc_distribution_list = [0] * len(labeled_documents)
 
         for label_string, n_doc in n_doc_distribution.items():
             #docs_index = label2id[numpy.where(label2id['key'] == label_string.encode('utf-8'))][0]['value']

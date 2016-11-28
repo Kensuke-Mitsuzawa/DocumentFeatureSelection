@@ -2,9 +2,10 @@ from typing import Dict, List, Tuple, Union, Any, TypeVar
 from scipy.sparse.csr import csr_matrix
 from DocumentFeatureSelection.common import utils
 from numpy.core.multiarray import array, ndarray
-from shelve import DbfilenameShelf
+from sqlitedict import SqliteDict
 import pickle, json, csv, os, shutil
 
+# this class is from https://code.activestate.com/recipes/576642/
 class PersistentDict(dict):
     ''' Persistent dictionary with an API compatible with shelve and anydbm.
 
@@ -184,5 +185,5 @@ class ScoredResultObject(object):
 
 FeatureType = TypeVar('T', str, Tuple[Any])
 AvailableInputTypes = TypeVar('T', PersistentDict,
-                              DbfilenameShelf,
+                              SqliteDict,
                               Dict[str,List[List[Union[str,Tuple[Any]]]]])

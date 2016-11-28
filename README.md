@@ -175,5 +175,6 @@ Removed a bug when calling n_gram method of DataConverter
     
 ## 1.3.2 2016/11/29
 
-* New input data type: `shelve.DbfilenameShelf`
-
+* You can put persisted-dict-object on disk-drive instead of dict-object on memory.
+    * You can put huge dict object as data-source of `interface.run_feature_selection()`
+    * See example `examples/huge_data_example.py`
