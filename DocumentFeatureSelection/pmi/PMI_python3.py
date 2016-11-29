@@ -4,6 +4,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from scipy.sparse import csr_matrix
+from numpy import memmap
+from typing import Union
 from logging import getLogger, StreamHandler
 
 import logging
@@ -25,7 +27,7 @@ __author__ = 'kensuke-mi'
 # http://sucrose.hatenablog.com/entry/2014/12/02/235959
 
 
-def pmi(X:csr_matrix,
+def pmi(X:Union[csr_matrix, memmap],
         n_docs_distribution:numpy.ndarray,
         n_total_doc:int,
         feature_index:int,
@@ -37,7 +39,7 @@ def pmi(X:csr_matrix,
     :param sample_index:
     :return:
     """
-    assert isinstance(X, csr_matrix)
+    assert isinstance(X, (memmap, csr_matrix))
     assert isinstance(n_docs_distribution, numpy.ndarray)
     assert isinstance(feature_index, int)
     assert isinstance(sample_index, int)
@@ -79,7 +81,7 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X,
+    def fit_transform(self, X:Union[csr_matrix, memmap],
                       n_docs_distribution,
                       n_jobs=1,
                       verbose=False,
@@ -87,7 +89,7 @@ class PMI(object):
                       use_cython:bool=False):
         """Main method of PMI class.
         """
-        assert isinstance(X, csr_matrix)
+        assert isinstance(X, (memmap, csr_matrix))
         assert isinstance(n_docs_distribution, numpy.ndarray)
 
         matrix_size = X.shape
@@ -136,7 +138,8 @@ class PMI(object):
 
         return pmi_featured_csr_matrix
 
-    def docId_word_PMI(self, X:csr_matrix,
+    def docId_word_PMI(self,
+                       X:Union[csr_matrix, memmap],
                        n_docs_distribution:numpy.ndarray,
                        n_total_doc:int,
                        feature_index:int,

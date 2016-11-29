@@ -57,8 +57,6 @@ class DataConverter(object):
         }
 
         # make list of distribution
-        #term_frequency_distribution_list = [0] * len(labeled_documents.keys())
-        # TODO
         term_frequency_distribution_list = [0] * len(labeled_documents)
 
         for label_string, n_doc in term_frequency_distribution.items():
@@ -82,8 +80,6 @@ class DataConverter(object):
         }
 
         # make list of distribution
-        # TODO
-        #n_doc_distribution_list = [0] * len(labeled_documents.keys())
         n_doc_distribution_list = [0] * len(labeled_documents)
 
         for label_string, n_doc in n_doc_distribution.items():
@@ -93,10 +89,22 @@ class DataConverter(object):
 
         return numpy.array(n_doc_distribution_list, dtype='i8')
 
-    def labeledMultiDocs2TermFreqMatrix(self, labeled_documents, ngram=1, n_jobs=1, joblib_backend='auto'):
-        # type: (AvailableInputTypes, int, int, str) -> DataCsrMatrix
-        """This function makes TERM-frequency matrix for TF-IDF calculation.
-        TERM-frequency matrix is scipy.csr_matrix.
+    def labeledMultiDocs2TermFreqMatrix(self,
+                                        labeled_documents:AvailableInputTypes,
+                                        is_use_cache:bool=False,
+                                        is_use_memmap:bool=False,
+                                        path_working_dir:str=None,
+                                        joblib_backend:str='auto',
+                                        ngram:int=1,
+                                        n_jobs:int=1):
+        """* What you can do
+        - This function makes TERM-frequency matrix for TF-IDF calculation.
+        - TERM-frequency matrix is scipy.csr_matrix.
+
+        * Params
+        - labeled_documents: Dict object which has category-name as key, and list of features as value
+        - is_use_cache: boolean flag to use disk-drive for keeping objects which tends to be huge.
+        - path_working_dir: path to directory for saving cache files
         """
         self.__check_data_structure(labeled_documents)
 
@@ -123,13 +131,21 @@ class DataConverter(object):
         )
 
         return DataCsrMatrix(
-                set_document_information.matrix_object,
-                set_document_information.label2id,
-                set_document_information.feature2id,
-                n_docs_distribution, term_frequency_distribution)
+            csr_matrix_=set_document_information.matrix_object,
+            label2id_dict=set_document_information.label2id,
+            vocabulary=set_document_information.feature2id,
+            n_docs_distribution=n_docs_distribution,
+            n_term_freq_distribution=term_frequency_distribution,
+            is_use_cache=is_use_cache,
+            is_use_memmap=is_use_memmap,
+            path_working_dir=path_working_dir
+        )
 
     def labeledMultiDocs2DocFreqMatrix(self,
                                        labeled_documents:AvailableInputTypes,
+                                       is_use_cache:bool=False,
+                                       is_use_memmap:bool=False,
+                                       path_working_dir:str=None,
                                        ngram:int=1,
                                        n_jobs:int=1,
                                        joblib_backend:str='auto')->DataCsrMatrix:
@@ -169,12 +185,15 @@ class DataConverter(object):
             label2id=set_document_information.label2id
         )
         return DataCsrMatrix(
-                set_document_information.matrix_object,
-                set_document_information.label2id,
-                set_document_information.feature2id,
-                n_docs_distribution, term_frequency_distribution)
-
-
+            csr_matrix_=set_document_information.matrix_object,
+            label2id_dict=set_document_information.label2id,
+            vocabulary=set_document_information.feature2id,
+            n_docs_distribution=n_docs_distribution,
+            n_term_freq_distribution=term_frequency_distribution,
+            is_use_cache=is_use_cache,
+            is_use_memmap=is_use_memmap,
+            path_working_dir=path_working_dir
+        )
 
 # -------------------------------------------------------------------------------------------------------------------
 # function for output

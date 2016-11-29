@@ -23,11 +23,26 @@ def decide_joblib_strategy(feature2id_dict:Dict[str,int])->str:
 
 def run_feature_selection(input_dict:AvailableInputTypes,
                           method:str,
-                          ngram:int=1,
-                          n_jobs:int=1,
-                          joblib_backend='auto',
+                          use_cython:bool=False,
+                          is_use_cache:bool=False,
+                          is_use_memmap:bool=False,
+                          path_working_dir:str=None,
                           matrix_form=None,
-                          use_cython:bool=False)->ScoredResultObject:
+                          joblib_backend='auto',
+                          n_jobs:int=1,
+                          ngram:int=1)->ScoredResultObject:
+    """A interface function of DocumentFeatureSelection package.
+
+    * Parameters
+    - input_dict: Dict-object which has category-name as key and list of features as value.
+        You can put dict or sqlitedict.SqliteDict, or DocumentFeatureSelection.models.PersistentDict
+    - method: A method name of feature selection metric
+    - use_cython: boolean flag to use cython code for computation. It's much faster to use cython than native-python code
+    - is_use_cache: boolean flag to use disk-drive for keeping objects which tends to be huge.
+    - is_use_memmap: boolean flag to use memmap for keeping matrix object.
+    - path_working_dir: str object.
+        The file path to directory where you save cache file or memmap matrix object. If you leave it None, it finds some directory and save files in it.
+    """
     if not method in METHOD_NAMES:
         raise Exception('method name must be either of {}. Yours: {}'.format(METHOD_NAMES, method))
 
@@ -39,7 +54,10 @@ def run_feature_selection(input_dict:AvailableInputTypes,
             labeled_documents=input_dict,
             ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend
+            joblib_backend=joblib_backend,
+            is_use_cache=is_use_cache,
+            is_use_memmap=is_use_memmap,
+            path_working_dir=path_working_dir
         )
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
@@ -53,7 +71,10 @@ def run_feature_selection(input_dict:AvailableInputTypes,
             labeled_documents=input_dict,
             ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend
+            joblib_backend=joblib_backend,
+            is_use_cache=is_use_cache,
+            is_use_memmap=is_use_memmap,
+            path_working_dir=path_working_dir
         )
         assert isinstance(matrix_data_object, DataCsrMatrix)
         if method == 'pmi':
@@ -83,7 +104,10 @@ def run_feature_selection(input_dict:AvailableInputTypes,
             labeled_documents=input_dict,
             ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend
+            joblib_backend=joblib_backend,
+            is_use_cache=is_use_cache,
+            is_use_memmap=is_use_memmap,
+            path_working_dir=path_working_dir
         )
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
@@ -109,7 +133,11 @@ def run_feature_selection(input_dict:AvailableInputTypes,
             labeled_documents=input_dict,
             ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend)
+            joblib_backend=joblib_backend,
+            is_use_cache=is_use_cache,
+            is_use_memmap=is_use_memmap,
+            path_working_dir=path_working_dir
+        )
         assert isinstance(matrix_data_object, DataCsrMatrix)
 
         true_class_index = matrix_data_object.label2id_dict['positive']
