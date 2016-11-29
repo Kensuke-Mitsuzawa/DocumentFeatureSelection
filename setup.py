@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '1.3.2'
+__version__ = '1.3.3'
 
 import sys
 import pip
@@ -42,6 +42,7 @@ except ImportError:
     use_numpy_include_dirs = False
     try:
         pip.main(['install', 'numpy'])
+        import numpy
     except:
         raise Exception('We failed to install numpy automatically. Try installing numpy manually or Try anaconda distribution.')
 # --------------------------------------------------------------------------------------------------------
@@ -52,6 +53,7 @@ except ImportError:
     use_numpy_include_dirs = False
     try:
         pip.main(['install', 'scipy'])
+        import scipy
     except:
         raise Exception('We failed to install scipy automatically. Try installing scipy manually or Try anaconda distribution.')
 # --------------------------------------------------------------------------------------------------------
@@ -60,7 +62,8 @@ python_version = sys.version_info
 
 if python_version >= (3, 0, 0):
     install_requires = ['six', 'setuptools>=1.0', 'joblib', 'numpy',
-                        'scipy', 'nltk', 'scikit-learn', 'pypandoc', 'cython', 'sqlitedict']
+                        'scipy', 'nltk', 'scikit-learn', 'pypandoc', 'cython', 'sqlitedict', 'nose',
+                        'typing']
 else:
     raise Exception('This package does NOT support Python2.x')
 
