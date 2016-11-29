@@ -1,0 +1,4 @@
+nose
+tox
+joblib
+typing
