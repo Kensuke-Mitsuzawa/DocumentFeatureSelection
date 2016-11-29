@@ -31,10 +31,14 @@ persistent_dict_obj['web'] = list(web_corpus)
 persistent_dict_obj['gutenberg'] = list(gutenberg_corpus)
 
 start = time.time()
+# If you put is_use_cache=True, it uses cache object for keeping huge objects during computation
+# If you put is_use_memmap=True, it uses memmap for keeping matrix during computation
 scored_matrix_obj = interface.run_feature_selection(
         input_dict=persistent_dict_obj,
         method='pmi',
-        use_cython=True
+        use_cython=True,
+        is_use_cache=True,
+        is_use_memmap=True
     )
 elapsed_time = time.time() - start
 print ("elapsed_time with cython:{} [sec]".format(elapsed_time))

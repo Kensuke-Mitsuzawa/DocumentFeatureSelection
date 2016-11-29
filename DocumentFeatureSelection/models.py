@@ -147,7 +147,7 @@ class DataCsrMatrix(object):
         return PersistentDict(path_cache_file, flag='c', format='json')
 
     def initialize_memmap_object(self, matrix_object:csr_matrix, path_memmap_object:str)->memmap:
-        fp = memmap(path_memmap_object, dtype='int64', mode='w+', shape=matrix_object.shape)
+        fp = memmap(path_memmap_object, dtype='float64', mode='w+', shape=matrix_object.shape)
         fp[:] = matrix_object.todense()[:]
         return fp
 

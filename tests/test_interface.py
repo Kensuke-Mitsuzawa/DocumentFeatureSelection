@@ -29,7 +29,7 @@ class TestInterface(unittest.TestCase):
             ]
         }
         cls.method = ['pmi', 'tf_idf', 'soa']
-        cls.bool_cython = [False, True]
+        cls.bool_cython = [True, False]
         cls.is_use_cache = [True, False]
         cls.is_use_memmap = [True, False]
         cls.joblib_range = range(0, 2)
@@ -41,6 +41,11 @@ class TestInterface(unittest.TestCase):
         os.remove(cls.path_sqlite3_persistent)
 
     def test_interface_shelve(self):
+        """パラメタ条件を組み合わせてテストを実行する　
+        - cythonモード使う or not
+        - cacheモード使う or not
+        - memmapモード使う or not
+        """
         shelve_obj = PersistentDict(self.path_shelve_file, 'c', 'json')
         for key, value in self.input_dict.items(): shelve_obj[key] = value
 
