@@ -2,7 +2,9 @@ from typing import Dict, List, Tuple, Union, Any, TypeVar
 from scipy.sparse.csr import csr_matrix
 from DocumentFeatureSelection.common import utils
 from numpy.core.multiarray import array, ndarray
+from numpy import memmap
 from sqlitedict import SqliteDict
+from tempfile import mkdtemp
 import pickle, json, csv, os, shutil
 
 # this class is from https://code.activestate.com/recipes/576642/
@@ -101,19 +103,58 @@ class DataCsrMatrix(object):
     csr_matrix is, sparse matrix from scipy.sparse
     """
 
-    __slots__ = ['csr_matrix_', 'label2id_dict', 'vocabulary', 'n_docs_distribution', 'n_term_freq_distribution']
+    __slots__ = ['csr_matrix_', 'label2id_dict', 'vocabulary', 'n_docs_distribution', 'n_term_freq_distribution', 'path_working_dir']
 
     def __init__(self, csr_matrix_:csr_matrix,
                  label2id_dict:Dict[str,int],
                  vocabulary:Dict[str,int],
                  n_docs_distribution:ndarray,
-                 n_term_freq_distribution:ndarray):
-        self.csr_matrix_ = csr_matrix_
-        self.label2id_dict = label2id_dict
-        self.vocabulary = vocabulary
+                 n_term_freq_distribution:ndarray,
+                 is_use_cache:bool=False,
+                 is_use_memmap:bool=False,
+                 path_working_dir:str=None):
+
         self.n_docs_distribution = n_docs_distribution
         self.n_term_freq_distribution = n_term_freq_distribution
+        if path_working_dir is None: self.path_working_dir = mkdtemp()
+        else: self.path_working_dir = path_working_dir
 
+        if is_use_cache:
+            """You use disk-drive for keeping object.
+            """
+            path_vocabulary_cache_obj = os.path.join(self.path_working_dir, 'vocabulary.cache')
+            path_label_2_dict_cache_obj = os.path.join(self.path_working_dir, 'label_2_dict.cache')
+            self.vocabulary = self.initialize_cache_dict_object(path_vocabulary_cache_obj)
+            self.vocabulary = vocabulary
+
+            self.label2id_dict = self.initialize_cache_dict_object(path_label_2_dict_cache_obj)
+            self.label2id_dict = label2id_dict
+        else:
+            """Keep everything on memory
+            """
+            self.label2id_dict = label2id_dict
+            self.vocabulary = vocabulary
+
+        if is_use_memmap:
+            """You use disk-drive for keeping object
+            """
+            path_memmap_obj = os.path.join(self.path_working_dir, 'matrix.memmap')
+            self.csr_matrix_ = self.initialize_memmap_object(csr_matrix_, path_memmap_object=path_memmap_obj)
+        else:
+            self.csr_matrix_ = csr_matrix_
+
+    def initialize_cache_dict_object(self, path_cache_file):
+        return PersistentDict(path_cache_file, flag='c', format='json')
+
+    def initialize_memmap_object(self, matrix_object:csr_matrix, path_memmap_object:str)->memmap:
+        fp = memmap(path_memmap_object, dtype='float64', mode='w+', shape=matrix_object.shape)
+        fp[:] = matrix_object.todense()[:]
+        return fp
+
+    def __str__(self):
+        return """matrix-type={}, matrix-size={}, path_working_dir={}""".format(type(self.csr_matrix_),
+                   self.csr_matrix_.shape,
+                   self.path_working_dir)
 
 class ScoredResultObject(object):
     def __init__(self,

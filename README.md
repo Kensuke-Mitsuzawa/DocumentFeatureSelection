@@ -178,3 +178,9 @@ Removed a bug when calling n_gram method of DataConverter
 * You can put persisted-dict-object on disk-drive instead of dict-object on memory.
     * You can put huge dict object as data-source of `interface.run_feature_selection()`
     * See example `examples/huge_data_example.py`
+    
+    
+## 1.3.3 2016/11/30
+
+* It introduced file-cache for keeping huge objects during computation.
+    
