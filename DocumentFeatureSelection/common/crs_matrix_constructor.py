@@ -1,12 +1,10 @@
 from logging import getLogger, StreamHandler
-from collections import namedtuple
 import joblib
 import sys
 import logging
 import numpy
 from typing import List, Tuple, Dict
 from scipy.sparse import csr_matrix
-from sklearn.feature_extraction import DictVectorizer
 
 logging.basicConfig(format='%(asctime)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p',

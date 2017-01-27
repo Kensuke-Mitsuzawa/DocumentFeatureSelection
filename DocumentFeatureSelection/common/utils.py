@@ -4,48 +4,21 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from scipy.sparse.csr import csr_matrix
-from numpy import ndarray, int32, int64
+from typing import Union
 from DocumentFeatureSelection import init_logger
+from DocumentFeatureSelection import models
+import sqlitedict
 import logging
-import collections
-import joblib
-import typing
-import numpy
 import sys
-import pickle
+import tempfile
+import os
 python_version = sys.version_info
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
 __author__ = 'kensuke-mi'
 
-ROW_COL_VAL = collections.namedtuple('ROW_COL_VAL', 'row col val')
 
-
-def flatten(lis):
-     for item in lis:
-         if isinstance(item, list) and not isinstance(item, str):
-             for x in flatten(item):
-                 yield x
-         else:
-             yield item
-
-
-def __conv_into_dict_format(pmi_word_score_items):
-    out_format_structure = {}
-    for item in pmi_word_score_items:
-        if out_format_structure not in item['label']:
-            out_format_structure[item['label']] = [{'word': item['word'], 'score': item['score']}]
-        else:
-            out_format_structure[item['label']].append({'word': item['word'], 'score': item['score']})
-    return out_format_structure
-
-
-def extract_from_csr_matrix(weight_csr_matrix, vocabulary, label_id, row_id, col_id):
-    assert isinstance(weight_csr_matrix, csr_matrix)
-    assert isinstance(vocabulary, dict)
-    assert isinstance(label_id, dict)
-
-
+'''
 def __get_value_index(row_index, column_index, weight_csr_matrix, verbose=False):
     assert isinstance(row_index, (int, int32))
     assert isinstance(column_index, (int, int32))
@@ -53,9 +26,9 @@ def __get_value_index(row_index, column_index, weight_csr_matrix, verbose=False)
 
     value = weight_csr_matrix[row_index, column_index]
 
-    return value
+    return value'''
 
-
+'''
 def make_non_zero_information(weight_csr_matrix:csr_matrix):
     """Construct Tuple of matrix value. Return value is array of ROW_COL_VAL namedtuple.
 
@@ -78,9 +51,9 @@ def make_non_zero_information(weight_csr_matrix:csr_matrix):
         for i
         in range(0, len(row_indexes))]
 
-    return value_index_items
+    return value_index_items'''
 
-
+'''
 def get_label(row_col_val_tuple, label_id):
     assert isinstance(row_col_val_tuple, ROW_COL_VAL)
     #assert isinstance(label_id, numpy.ndarray)
@@ -89,9 +62,9 @@ def get_label(row_col_val_tuple, label_id):
     #label = label_id[numpy.where(label_id['key'] == row_col_val_tuple.row)][0]['value']
     label = label_id[row_col_val_tuple.row]
 
-    return label
+    return label'''
 
-
+'''
 def get_word(row_col_val_tuple, vocabulary):
     assert isinstance(row_col_val_tuple, ROW_COL_VAL)
     #assert isinstance(vocabulary, numpy.ndarray)
@@ -99,9 +72,9 @@ def get_word(row_col_val_tuple, vocabulary):
     #vocab = vocabulary[numpy.where(vocabulary['key'] == row_col_val_tuple.col)][0]['value']
     vocab = vocabulary[row_col_val_tuple.col]
 
-    return vocab
+    return vocab'''
 
-
+'''
 def SUB_FUNC_feature_extraction(row_col_val_tuple:typing.Tuple[int,int,int], id2label:numpy.ndarray, id2vocab:numpy.ndarray):
     """This function returns PMI score between label and words.
 
@@ -120,9 +93,9 @@ def SUB_FUNC_feature_extraction(row_col_val_tuple:typing.Tuple[int,int,int], id2
         'score': row_col_val_tuple.val,
         'label': get_label(row_col_val_tuple, id2label),
         'word': get_word(row_col_val_tuple, id2vocab)
-    }
+    }'''
 
-
+'''
 def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, n_jobs=1):
     """Get dictionary structure of PMI featured scores.
 
@@ -157,8 +130,6 @@ def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, n_jobs
     logger.debug(msg='Input matrix size= {} * {}'.format(weighted_matrix.shape[0], weighted_matrix.shape[1]))
 
     value_index_items = make_non_zero_information(weighted_matrix)
-    #id2label = numpy.array([(element['value'], element['key']) for element in label_group_dict], dtype=[('key', '<i'), ('value', label_group_dict.dtype['key'])])
-    #id2vocab = numpy.array([(element['value'], element['key']) for element in vocabulary], dtype=[('key', '<i'), ('value', vocabulary.dtype['key'])])
     id2label = {value:key for key, value in label_group_dict.items()}
     id2vocab = {value:key for key, value in vocabulary.items()}
 
@@ -173,6 +144,45 @@ def get_feature_dictionary(weighted_matrix, vocabulary, label_group_dict, n_jobs
 
     logger.debug(msg='Finished making scored dictionary')
 
-    return score_objects
+    return score_objects'''
 
 
+def flatten(lis):
+    for item in lis:
+        if isinstance(item, list) and not isinstance(item, str):
+            for x in flatten(item):
+                yield x
+        else:
+            yield item
+
+
+def __conv_into_dict_format(pmi_word_score_items):
+    out_format_structure = {}
+    for item in pmi_word_score_items:
+        if out_format_structure not in item['label']:
+            out_format_structure[item['label']] = [{'word': item['word'], 'score': item['score']}]
+        else:
+            out_format_structure[item['label']].append({'word': item['word'], 'score': item['score']})
+    return out_format_structure
+
+
+def extract_from_csr_matrix(weight_csr_matrix, vocabulary, label_id, row_id, col_id):
+    assert isinstance(weight_csr_matrix, csr_matrix)
+    assert isinstance(vocabulary, dict)
+    assert isinstance(label_id, dict)
+
+
+def init_cache_object(file_name:str,
+                      path_work_dir:str=tempfile.mkdtemp(),
+                      cache_backend:str='PersistentDict')->Union[sqlitedict.SqliteDict, models.PersistentDict]:
+    """* What you can do
+    - You initialize cached object.
+    """
+    if cache_backend == 'PersistentDict':
+        cached_obj = models.PersistentDict(os.path.join(path_work_dir, file_name))
+    elif cache_backend == 'SqliteDict':
+        cached_obj = sqlitedict.SqliteDict(os.path.join(path_work_dir, file_name), autocommit=True)
+    else:
+        raise Exception('No cache backend named {}'.format(cache_backend))
+
+    return cached_obj

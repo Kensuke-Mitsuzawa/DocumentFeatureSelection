@@ -4,13 +4,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from DocumentFeatureSelection.common import utils, labeledMultiDocs2labeledDocsSet, ngram_constructor
-from DocumentFeatureSelection.models import DataCsrMatrix, FeatureType, AvailableInputTypes
+from DocumentFeatureSelection.models import DataCsrMatrix, AvailableInputTypes
 from DocumentFeatureSelection import init_logger
-from scipy.sparse import csr_matrix
 from sqlitedict import SqliteDict
 import logging
 import sys
 import numpy
+import tempfile
 from typing import Dict
 python_version = sys.version_info
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
@@ -93,8 +93,9 @@ class DataConverter(object):
                                         labeled_documents:AvailableInputTypes,
                                         is_use_cache:bool=False,
                                         is_use_memmap:bool=False,
-                                        path_working_dir:str=None,
+                                        path_working_dir:str=tempfile.mkdtemp(),
                                         joblib_backend:str='auto',
+                                        cache_backend:str='PersistentDict',
                                         ngram:int=1,
                                         n_jobs:int=1):
         """* What you can do
@@ -138,7 +139,8 @@ class DataConverter(object):
             n_term_freq_distribution=term_frequency_distribution,
             is_use_cache=is_use_cache,
             is_use_memmap=is_use_memmap,
-            path_working_dir=path_working_dir
+            path_working_dir=path_working_dir,
+            cache_backend=cache_backend
         )
 
     def labeledMultiDocs2DocFreqMatrix(self,
@@ -195,6 +197,8 @@ class DataConverter(object):
             path_working_dir=path_working_dir
         )
 
+
+'''
 # -------------------------------------------------------------------------------------------------------------------
 # function for output
 
@@ -249,3 +253,4 @@ def scored_matrix2score_dictionary(scored_matrix:csr_matrix,
 
 # for old version code
 ScoreMatrix2ScoreDictionary = scored_matrix2score_dictionary
+'''
