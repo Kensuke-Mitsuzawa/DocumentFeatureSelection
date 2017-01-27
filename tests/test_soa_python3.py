@@ -1,5 +1,6 @@
 from DocumentFeatureSelection.soa import soa_python3
 from DocumentFeatureSelection.common import data_converter
+from DocumentFeatureSelection.models import ScoredResultObject
 import unittest
 
 
@@ -43,11 +44,11 @@ class TestSoaPython3(unittest.TestCase):
             verbose=True
         )
 
-        soa_scores_term_freq = data_converter.ScoreMatrix2ScoreDictionary(
+        soa_scores_term_freq = ScoredResultObject(
             scored_matrix=scored_matrix_term_freq,
             label2id_dict=label2id_dict,
             feature2id_dict=vocabulary
-        )
+        ).ScoreMatrix2ScoreDictionary()
 
         import pprint
         print('term freq based soa')
@@ -71,11 +72,11 @@ class TestSoaPython3(unittest.TestCase):
             verbose=True
         )
 
-        soa_scores_doc_freq = data_converter.ScoreMatrix2ScoreDictionary(
+        soa_scores_doc_freq = ScoredResultObject(
             scored_matrix=scored_matrix_doc_freq,
             label2id_dict=label2id_dict,
             feature2id_dict=vocabulary
-        )
+        ).ScoreMatrix2ScoreDictionary()
 
         import pprint
         print('doc freq based soa')

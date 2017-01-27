@@ -86,12 +86,12 @@ pprint.pprint(soa_scored_object_cython.ScoreMatrix2ScoreDictionary())
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # bns
 input_dict = {
-    "positive": [
+    "label1": [
         ["I", "aa", "aa", "aa", "aa", "aa"],
         ["bb", "aa", "aa", "aa", "aa", "aa"],
         ["I", "aa", "hero", "some", "ok", "aa"]
     ],
-    "negative": [
+    "label2": [
         ["bb", "bb", "bb"],
         ["bb", "bb", "bb"],
         ["hero", "ok", "bb"],
@@ -104,3 +104,9 @@ bns_scored_object = interface.run_feature_selection(
     n_jobs=1
 )
 pprint.pprint(bns_scored_object.ScoreMatrix2ScoreDictionary())
+
+bns_scored_object = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='bns',
+    use_cython=True
+)

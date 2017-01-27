@@ -6,6 +6,7 @@ from __future__ import division
 from scipy.sparse import csr_matrix
 from numpy import memmap
 from typing import Union
+from DocumentFeatureSelection import init_logger
 from logging import getLogger, StreamHandler
 
 import logging
@@ -13,13 +14,8 @@ import joblib
 import math
 import numpy
 
-logging.basicConfig(format='%(asctime)s %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p',
-                    level=logging.DEBUG)
-logger = getLogger(__name__)
-handler = StreamHandler()
-logger.addHandler(handler)
-
+logger = getLogger(init_logger.LOGGER_NAME)
+logger = init_logger.init_logger(logger)
 __author__ = 'kensuke-mi'
 
 
