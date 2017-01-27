@@ -2,17 +2,69 @@ from scipy.sparse import csr_matrix
 from sklearn.base import TransformerMixin
 from scipy.stats import norm
 from logging import getLogger, StreamHandler
-from numpy import ndarray
+from numpy import ndarray, memmap
+from typing import Union
+from DocumentFeatureSelection import init_logger
 import numpy as np
 import joblib
 import logging
 
-logging.basicConfig(format='%(asctime)s %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p',
-                    level=logging.DEBUG)
-logger = getLogger(__name__)
-handler = StreamHandler()
-logger.addHandler(handler)
+logger = getLogger(init_logger.LOGGER_NAME)
+logger = init_logger.init_logger(logger)
+
+
+def bns(X:Union[memmap, csr_matrix],
+        feature_index: int,
+        sample_index: int,
+        unit_distribution: np.ndarray,
+        true_index: int = 0,
+        verbose: bool = False):
+    if true_index == 0:
+        false_index = 1
+    elif true_index == 1:
+        false_index = 0
+    else:
+        raise Exception('true index must be either of 0 or 1')
+
+    # trueラベルで出現した回数
+    # tp is frequency of features in the specified positive label
+    tp = X[true_index, feature_index]
+    # trueラベルで出現しなかった回数
+    # fp is frequency of NON-features(expect specified feature) in the specified positive label
+    fp = unit_distribution[true_index] - tp
+
+    # negativeラベルで出現した回数
+    # fn is frequency of features in the specified negative label
+    fn = X[false_index, feature_index]
+    # negativeラベルで出現しなかった回数
+    # fp is frequency of NON-features(expect specified feature) in the specified negative label
+    tn = unit_distribution[false_index] - fn
+
+    if tn < 0.0:
+        print('aaaa')
+
+    pos = tp + fn
+    neg = fp + tn
+
+    tpr = tp / pos
+    fpr = fp / neg
+
+    if verbose:
+        logging.debug('For feature_index:{} sample_index:{}'.format(feature_index, sample_index))
+        logging.debug('tp:{} fp:{} fn:{} tn:{} pos:{} neg:{} tpr:{} fpr:{}'.format(
+            tp,
+            fp,
+            fn,
+            tn,
+            pos,
+            neg,
+            tpr,
+            fpr
+        ))
+
+    bns_score = np.abs(norm.ppf(norm.cdf(tpr)) - norm.ppf(norm.cdf(fpr)))
+    return bns_score
+
 
 
 class BNS(TransformerMixin):
@@ -26,9 +78,26 @@ class BNS(TransformerMixin):
         if n_categories != 2:
             raise Exception('BNS input must be of 2 categories')
 
-    def fit_transform(self, X:csr_matrix, y=None, **fit_params):
+    def fit_transform(self,
+                      X: Union[memmap, csr_matrix],
+                      y=None,
+                      **fit_params):
+        """* What you can do
+
+        * Args
+        - X; scipy.csr_matrix or numpy.memmap: Matrix object
+
+        * Params
+        - unit_distribution; list or ndarray: The number of document frequency per label. Ex. [10, 20]
+        - n_jobs: The number of cores when you use joblib.
+        - joblib_backend: "multiprocessing" or "multithreding"
+        - true_index: The index number of True label.
+        - use_cython; boolean: True, then Use Cython for computation. False, not.
+        """
         assert isinstance(X, csr_matrix)
 
+        # --------------------------------------------------------
+        # Check parameters
         if not 'unit_distribution' in fit_params:
             raise Exception('You must put unit_distribution parameter')
         assert isinstance(fit_params['unit_distribution'], (list, ndarray))
@@ -56,6 +125,12 @@ class BNS(TransformerMixin):
         else:
             joblib_backend = 'multiprocessing'
 
+        if 'use_cython' in fit_params:
+            is_use_cython = True
+        else:
+            is_use_cython = False
+        # --------------------------------------------------------
+
         matrix_size = X.shape
         sample_range = list(range(0, matrix_size[0]))
         feature_range = list(range(0, matrix_size[1]))
@@ -63,8 +138,21 @@ class BNS(TransformerMixin):
         logger.debug(msg='Start calculating BNS with n(process)={}'.format(n_jobs))
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
 
-        bns_score_csr_source = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
-            joblib.delayed(self.docId_word_BNS)(
+        if is_use_cython:
+            import pyximport; pyximport.install()
+            from DocumentFeatureSelection.bns.bns_cython import main
+            logger.warning(msg='n_jobs parameter is invalid when use_cython=True')
+            bns_score_csr_source = main(
+                X=X,
+                unit_distribution=unit_distribution,
+                sample_range=sample_range,
+                feature_range=feature_range,
+                true_index=true_index,
+                verbose=verbose
+            )
+        else:
+            bns_score_csr_source = joblib.Parallel(n_jobs=n_jobs, backend=joblib_backend)(
+                joblib.delayed(self.docId_word_BNS)(
                 X=X,
                 feature_index=feature_index,
                 sample_index=sample_index,
@@ -73,8 +161,7 @@ class BNS(TransformerMixin):
                 verbose=verbose
             )
             for sample_index in sample_range
-            for feature_index in feature_range
-        )
+            for feature_index in feature_range)
 
         row_list = [t[0] for t in bns_score_csr_source]
         col_list = [t[1] for t in bns_score_csr_source]
@@ -99,7 +186,7 @@ class BNS(TransformerMixin):
         assert isinstance(feature_index, int)
         assert isinstance(sample_index, int)
 
-        bns_score = self.bns(
+        bns_score = bns(
             X=X,
             feature_index=feature_index,
             sample_index=sample_index,
@@ -108,55 +195,3 @@ class BNS(TransformerMixin):
             verbose=verbose
         )
         return sample_index, feature_index, bns_score
-
-    def bns(self, X:csr_matrix,
-            feature_index:int,
-            sample_index:int,
-            unit_distribution:np.ndarray,
-            true_index:int=0,
-            verbose:bool=False):
-        if true_index==0:
-            false_index = 1
-        elif true_index==1:
-            false_index = 0
-        else:
-            raise Exception('true index must be either of 0 or 1')
-
-        # trueラベルで出現した回数
-        # tp is frequency of features in the specified positive label
-        tp = X[true_index, feature_index]
-        # trueラベルで出現しなかった回数
-        # fp is frequency of NON-features(expect specified feature) in the specified positive label
-        fp = unit_distribution[true_index] - tp
-
-        # negativeラベルで出現した回数
-        # fn is frequency of features in the specified negative label
-        fn = X[false_index, feature_index]
-        # negativeラベルで出現しなかった回数
-        # fp is frequency of NON-features(expect specified feature) in the specified negative label
-        tn = unit_distribution[false_index] - fn
-
-        if tn < 0.0:
-            print('aaaa')
-
-        pos = tp + fn
-        neg = fp + tn
-
-        tpr = tp / pos
-        fpr = fp / neg
-
-        if verbose:
-            logging.debug('For feature_index:{} sample_index:{}'.format(feature_index, sample_index))
-            logging.debug('tp:{} fp:{} fn:{} tn:{} pos:{} neg:{} tpr:{} fpr:{}'.format(
-                tp,
-                fp,
-                fn,
-                tn,
-                pos,
-                neg,
-                tpr,
-                fpr
-            ))
-
-        bns_score = np.abs(norm.ppf(norm.cdf(tpr)) - norm.ppf(norm.cdf(fpr)))
-        return bns_score

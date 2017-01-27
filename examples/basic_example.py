@@ -104,3 +104,9 @@ bns_scored_object = interface.run_feature_selection(
     n_jobs=1
 )
 pprint.pprint(bns_scored_object.ScoreMatrix2ScoreDictionary())
+
+bns_scored_object = interface.run_feature_selection(
+    input_dict=input_dict,
+    method='bns',
+    use_cython=True
+)

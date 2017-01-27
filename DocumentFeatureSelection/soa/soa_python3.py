@@ -1,18 +1,14 @@
 from scipy.sparse import csr_matrix
 from numpy import memmap
 from typing import Union
-from logging import getLogger, StreamHandler
+from logging import getLogger
+from DocumentFeatureSelection import init_logger
 import logging
 import joblib
 import math
 import numpy
-
-logging.basicConfig(format='%(asctime)s %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p',
-                    level=logging.DEBUG)
-logger = getLogger(__name__)
-handler = StreamHandler()
-logger.addHandler(handler)
+logger = getLogger(init_logger.LOGGER_NAME)
+logger = init_logger.init_logger(logger)
 
 __author__ = 'kensuke-mi'
 
@@ -71,6 +67,10 @@ class SOA(object):
                       verbose=False,
                       joblib_backend='multiprocessing',
                       use_cython:bool=False):
+        """* What you can do
+        - Get SOA weighted-score matrix.
+        - You can get fast-speed with Cython
+        """
         assert isinstance(X, (memmap, csr_matrix))
         assert isinstance(unit_distribution, numpy.ndarray)
 

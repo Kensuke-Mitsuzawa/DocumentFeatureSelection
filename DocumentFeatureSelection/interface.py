@@ -147,7 +147,8 @@ def run_feature_selection(input_dict:AvailableInputTypes,
             unit_distribution=matrix_data_object.n_term_freq_distribution,
             n_jobs=n_jobs,
             true_index=true_class_index,
-            joblib_backend=backend_strategy
+            joblib_backend=backend_strategy,
+            use_cython=use_cython
         )
         assert isinstance(scored_sparse_matrix, csr_matrix)
     else:

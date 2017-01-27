@@ -61,8 +61,41 @@ class TestBnsPython3(unittest.TestCase):
                 ["bb", "bb", "bb"],
                 ["hero", "ok", "bb"],
                 ["hero", "cc", "bb"],
+                ["cc", "cc", "cc"],
+                ["cc", "cc", "bb"],
+                ["xx", "xx", "cc"],
+                ["aa", "xx", "cc"],
             ],
-            "label_c": [
+            "label_c":[
+                ["aa", "xx", "cc"]
+            ]
+        }
+
+        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+            labeled_documents=incorrect_input_dict,
+            ngram=1,
+            n_jobs=5
+        )
+        assert isinstance(data_csr_matrix, DataCsrMatrix)
+        csr_matrix_ = data_csr_matrix.csr_matrix_
+        n_docs_distribution = data_csr_matrix.n_docs_distribution
+        try:
+            bns_python3.BNS().fit_transform(X=csr_matrix_, y=None, unit_distribution=n_docs_distribution)
+        except:
+            pass
+
+    def test_bns_cython(self):
+        incorrect_input_dict = {
+            "label_a": [
+                ["I", "aa", "aa", "aa", "aa", "aa"],
+                ["bb", "aa", "aa", "aa", "aa", "aa"],
+                ["I", "aa", "hero", "some", "ok", "aa"]
+            ],
+            "label_b": [
+                ["bb", "bb", "bb"],
+                ["bb", "bb", "bb"],
+                ["hero", "ok", "bb"],
+                ["hero", "cc", "bb"],
                 ["cc", "cc", "cc"],
                 ["cc", "cc", "bb"],
                 ["xx", "xx", "cc"],
@@ -76,15 +109,14 @@ class TestBnsPython3(unittest.TestCase):
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, DataCsrMatrix)
-        label2id_dict = data_csr_matrix.label2id_dict
         csr_matrix_ = data_csr_matrix.csr_matrix_
         n_docs_distribution = data_csr_matrix.n_docs_distribution
-        vocabulary = data_csr_matrix.vocabulary
 
-        try:
-            bns_python3.BNS().fit_transform(X=csr_matrix_, y=None, unit_distribution=n_docs_distribution)
-        except Exception:
-            pass
+        result_bns = bns_python3.BNS().fit_transform(X=csr_matrix_,
+                                        y=None,
+                                        unit_distribution=n_docs_distribution,
+                                        use_cython=True)
+        print(result_bns)
 
 
 if __name__ == '__main__':

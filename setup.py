@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '1.3.3'
+__version__ = '1.3.4'
 
 import sys
 import pip
@@ -26,12 +26,15 @@ ext_modules = [ ]
 if use_cython:
     ext_modules += [
         Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.pyx" ],),
-        Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.pyx" ],)
+        Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.pyx" ],),
+        Extension("DocumentFeatureSelection.bns.bns_cython", [ "DocumentFeatureSelection/bns/bns_cython.pyx" ],)
     ]
     cmdclass.update({ 'build_ext': build_ext })
 else:
     ext_modules += [
         Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.c" ]),
+        Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.c" ]),
+        Extension("DocumentFeatureSelection.bns.bns_cython", [ "DocumentFeatureSelection/bns/bns_cython.c" ],)
     ]
 
 # --------------------------------------------------------------------------------------------------------
