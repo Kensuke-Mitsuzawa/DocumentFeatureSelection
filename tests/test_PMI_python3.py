@@ -1,6 +1,7 @@
 import unittest
 from DocumentFeatureSelection.common import data_converter
 from DocumentFeatureSelection.common.data_converter import DataCsrMatrix
+from DocumentFeatureSelection.models import ScoredResultObject
 from DocumentFeatureSelection.pmi import PMI_python3
 from scipy.sparse import csr_matrix
 
@@ -66,10 +67,11 @@ class TestPmiPython3(unittest.TestCase):
         )
         assert isinstance(scored_matrix, csr_matrix)
 
-        pmi_scored_dict = data_converter.ScoreMatrix2ScoreDictionary(
+        pmi_scored_dict = ScoredResultObject(
             scored_matrix=scored_matrix,
             label2id_dict=self.label2id_dict,
-            feature2id_dict=self.vocabulary,
+            feature2id_dict=self.vocabulary
+        ).ScoreMatrix2ScoreDictionary(
             outformat='items',
             n_jobs=1
         )

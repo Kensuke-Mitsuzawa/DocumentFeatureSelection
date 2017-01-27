@@ -183,4 +183,9 @@ Removed a bug when calling n_gram method of DataConverter
 ## 1.3.3 2016/11/30
 
 * It introduced file-cache for keeping huge objects during computation.
-    
+
+
+## 1.3.4 2017/1/27
+
+* It introduced cython computation for BNS.
+* I cleaned up misery dependencies between modules.

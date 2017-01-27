@@ -7,6 +7,7 @@ from scipy.sparse import csr_matrix
 from DocumentFeatureSelection.common import data_converter
 from DocumentFeatureSelection.common.data_converter import DataCsrMatrix
 from DocumentFeatureSelection.tf_idf import tf_idf
+from DocumentFeatureSelection.models import ScoredResultObject
 import logging
 import unittest
 import numpy
@@ -73,10 +74,11 @@ class TestTfIdf(unittest.TestCase):
         )
         assert isinstance(tf_idf_weighted_matrix, csr_matrix)
 
-        tf_idf_scored_dict = data_converter.ScoreMatrix2ScoreDictionary(
+        tf_idf_scored_dict = ScoredResultObject(
             scored_matrix=tf_idf_weighted_matrix,
             label2id_dict=self.label2id_dict,
             feature2id_dict=self.vocabulary,
+        ).ScoreMatrix2ScoreDictionary(
             outformat='items',
             n_jobs=-1
         )

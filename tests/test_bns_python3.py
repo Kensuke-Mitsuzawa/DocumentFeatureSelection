@@ -2,6 +2,7 @@ import unittest
 from DocumentFeatureSelection.common import data_converter
 from DocumentFeatureSelection.common.data_converter import DataCsrMatrix
 from DocumentFeatureSelection.bns import bns_python3
+from DocumentFeatureSelection.models import ScoredResultObject
 from scipy.sparse import csr_matrix
 
 
@@ -39,11 +40,11 @@ class TestBnsPython3(unittest.TestCase):
                                         verbose=True)
         assert isinstance(bns_score_csr_matrix, csr_matrix)
 
-        bns_scores_dict = data_converter.ScoreMatrix2ScoreDictionary(
+        bns_scores_dict = ScoredResultObject(
             scored_matrix=bns_score_csr_matrix,
             label2id_dict=label2id_dict,
             feature2id_dict=vocabulary
-        )
+        ).ScoreMatrix2ScoreDictionary()
         assert isinstance(bns_scores_dict, list)
         import pprint
         pprint.pprint(bns_scores_dict)
