@@ -86,12 +86,12 @@ pprint.pprint(soa_scored_object_cython.ScoreMatrix2ScoreDictionary())
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # bns
 input_dict = {
-    "positive": [
+    "label1": [
         ["I", "aa", "aa", "aa", "aa", "aa"],
         ["bb", "aa", "aa", "aa", "aa", "aa"],
         ["I", "aa", "hero", "some", "ok", "aa"]
     ],
-    "negative": [
+    "label2": [
         ["bb", "bb", "bb"],
         ["bb", "bb", "bb"],
         ["hero", "ok", "bb"],
