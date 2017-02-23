@@ -1,0 +1,39 @@
+language: python
+python:
+  - 3.5
+addons:
+  apt:
+    packages:
+    - git
+    - make
+    - curl
+    - xz-utils
+    - file
+    - pandoc
+    - gcc-5
+    - g++-5
+    - build-essential
+    sources:
+    - ubuntu-toolchain-r-test
+before_install:
+  - sudo apt-get update -qq
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
+  - export CC="gcc-5"
+  - export CXX="g++-5"
+  - export CFLAGS=-std=c++11
+  - export CXXFLAGS=-std=c++11
+  - pip install numpy scipy scikit-learn cython
+install:
+  - python --version
+  - python setup.py build install
+  - pip install coveralls coverage nose
+script:
+  - coverage run --source=DocumentFeatureSelection setup.py test
+after_success:
+  - sudo coveralls
+notifications:
+  email:
+    recipients:
+      - kensuke.mit@gmail.com
+    on_success: always
+    on_failure: always
