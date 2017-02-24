@@ -1,0 +1,52 @@
+To test manually
+- - -
+
+
+1. launch redis
+2. launch celery
+3. start app
+4. send query with curl
+
+
+1. launch redis
+
+
+It checked under Server started, Redis version 3.2.8.
+
+Some error might happen if redis version is old.
+
+redis port must be same as the one in celeryconfig.py
+
+```
+/usr/local/bin/redis-server --port 6379
+```
+
+
+2. launch celery
+
+At this directory
+
+```
+celery worker -A app --loglevel=info
+```
+
+3. start app
+
+```
+python app.py
+```
+
+4. send query with curl
+
+```
+curl localhost:5000/run_job_api -H "Content-type: application/json" -X POST -d  '{"method": "soa", "input_data": {"label1": [["I", "aa", "aa", "aa", "aa", "aa"],["bb", "aa", "aa", "aa", "aa", "aa"], ["I", "aa", "hero", "some", "ok", "aa"]], "label2": [ ["bb", "bb", "bb"], ["bb", "bb", "bb"], ["hero", "ok", "bb"], ["hero", "cc", "bb"]]}}'
+```
+
+celery must log following message
+
+```
+[2017-02-24 11:29:46,191: INFO/PoolWorker-1] Task app.run_interface[b6c489cd-f53e-4c34-bf2c-a34923320cd8] succeeded in 0.04774747000192292s: {'job_id': '2017-02-24-7f4e5970-c7a8-4f02-9231-b6eecbe57cea', 'status': 'completed'}
+```
+
+The result must be in backend sqlite3 db.
+

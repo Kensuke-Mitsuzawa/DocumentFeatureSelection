@@ -156,7 +156,7 @@ def run_feature_selection(input_dict:AvailableInputTypes,
         assert isinstance(scored_sparse_matrix, csr_matrix)
     else:
         raise Exception()
-
+    logger.info('Done computation.')
     return ScoredResultObject(
         scored_matrix=scored_sparse_matrix,
         label2id_dict=matrix_data_object.label2id_dict,

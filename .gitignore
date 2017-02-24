@@ -66,4 +66,5 @@ target/
 envs/
 package/
 .python-version
-
+web_api/tests/matrix.memmap
+web_api/tests/backend.sqlite3
