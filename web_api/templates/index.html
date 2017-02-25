@@ -137,8 +137,11 @@
   ]
 }</code></pre>
 
-    <h3>System information</h3>
-    <p>Package version: {{ version_info }}</p>
+To test with this api
+<pre><code>curl localhost:5000/get_result_api -H "Content-type: application/json" -X POST -d '{"job_id": "2017-02-25-c7532513-0a0b-4496-b2a8-8b1094b7defc"}'</code></pre>
+
+<h2>System information</h2>
+<p>Package version: {{ version_info }}</p>
 
 
 
