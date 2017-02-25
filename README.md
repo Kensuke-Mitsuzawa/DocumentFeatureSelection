@@ -124,6 +124,38 @@ In this case, you take following choice
 
 See scripts in `examples/`
 
+# WebApi & Docker
+
+This system has web-api with `Flask`.
+
+You're able to use it with Docker.
+
+If you'd like to use it, first you `git clone` from repository.
+
+## Docker
+
+### Build docker image
+
+```
+docker build -t document-feature-selection-api ./
+```
+
+### Run docker container 
+
+```
+docker run --name document-feature-selection-api-container -d -p 5000:5000 document-feature-selection-api
+```
+
+### To use api
+
+You're able to see documentation of web-app with `/`
+ 
+For example, if your local machine is docker host, you can get access there with
+
+```
+http://localhost:5000
+```
+
 
 # Change log
 
@@ -189,3 +221,7 @@ Removed a bug when calling n_gram method of DataConverter
 
 * It introduced cython computation for BNS.
 * I cleaned up misery dependencies between modules.
+
+## 1.3.5 2017/2/25
+
+* The system is with Docker + Web-app
