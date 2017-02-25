@@ -16,4 +16,4 @@ CELERYD_LOG_FILE = "celeryd.log"
 CELERYD_LOG_LEVEL = "INFO" # DEBUG, INFO, WARNING, ERROR or CRITICAL
 
 # 起動時に読み込むモジュール
-CELERY_IMPORTS = ("app",) # 上のtasks.pyのこと
+CELERY_IMPORTS = ("app",)

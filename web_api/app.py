@@ -2,7 +2,7 @@
 ## flask package
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 ## typing
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 ## DocumentFeature selection
 from DocumentFeatureSelection import interface
 from celery import Celery
@@ -10,10 +10,11 @@ from celery import Celery
 import uuid
 ## to save job result
 # else
+import pkg_resources
 import os
-import sqlite3
 import traceback
 import json
+import apsw
 from datetime import datetime
 
 
@@ -31,18 +32,22 @@ class Sqlite3Handler(object):
         self.is_close_connection_end = is_close_connection_end
         self.path_sqlite_file = path_sqlite_file
         if not os.path.exists(self.path_sqlite_file):
-            self.db_connection = sqlite3.connect(database=self.path_sqlite_file)
-            self.db_connection.text_factory = str
+            #self.db_connection = sqlite3.connect(database=self.path_sqlite_file)
+            #self.db_connection.text_factory = str
+            self.db_connection = apsw.Connection(filename=self.path_sqlite_file)
             self.create_db()
+            self.db_connection = apsw.Connection(filename=self.path_sqlite_file)
         else:
-            self.db_connection = sqlite3.connect(database=self.path_sqlite_file)
-            self.db_connection.text_factory = str
+            #self.db_connection = sqlite3.connect(database=self.path_sqlite_file)
+            #self.db_connection.text_factory = str
+            self.db_connection = apsw.Connection(filename=self.path_sqlite_file)
 
     def __del__(self):
         if self.is_close_connection_end and hasattr(self, 'db_connection'):
             self.db_connection.close()
 
     def create_db(self):
+        #cur = self.db_connection.cursor()
         cur = self.db_connection.cursor()
         sql = """create table if not exists {table_name} (
         record_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +56,8 @@ class Sqlite3Handler(object):
         created_at DATETIME,
         updated_at DATETIME)"""
         cur.execute(sql.format(table_name=self.table_name_text))
-        self.db_connection.commit()
+        #self.db_connection.commit()
+        self.db_connection.execute('commit')
 
     def insert_record(self, job_id:str, result_obj:List[Dict[str,Any]]):
         """* What you can do
@@ -71,22 +77,24 @@ class Sqlite3Handler(object):
             try:
                 cur.execute(sql_insert, (job_id,
                                          result_json))
-                self.db_connection.commit()
+                self.db_connection.execute('commit')
                 cur.close()
             except:
                 #logger.error(traceback.format_exc())
+                # self.db_connection.rollback()
                 print(traceback.format_exc())
-                self.db_connection.rollback()
                 return False
 
-
-    def get_one_record(self, record_id):
+    def get_one_record(self, record_id)->Union[None, Dict[str,Any]]:
         sql_ = """SELECT result_json FROM {} WHERE job_id = ?""".format(self.table_name_text)
 
         cur = self.db_connection.cursor()
         cur.execute(sql_, (record_id, ))
         fetched_record = cur.fetchone()
-        return json.loads(fetched_record[0])
+        if fetched_record is None:
+            return False
+        else:
+            return json.loads(fetched_record[0])
 
 
 def make_celery(app):
@@ -124,6 +132,7 @@ backend_database_handler = Sqlite3Handler(path_sqlite_file=path_backend_db)
 
 @celery.task(bind=True)
 def run_interface(self,
+                  job_id:str,
                   input_dict:Dict[str,Any],
                   method:str,
                   use_cython:bool=True,
@@ -147,24 +156,24 @@ def run_interface(self,
         is_use_memmap=is_use_memmap,
         path_working_dir=flask_app.config['PATH_WORKING_DIR']
     )
-    date = started_at.strftime('%Y-%m-%d')
-    job_id = '{}-{}'.format(date, str(uuid.uuid4()))
 
     backend_database_handler.insert_record(job_id=job_id,
                                            result_obj=scored_result_obj.ScoreMatrix2ScoreDictionary())
 
-    return {'job_id': job_id, 'status': 'completed'}
+    return {'job_id': job_id,
+            'status': 'completed',
+            'method': method,
+            'started_at': started_at.strftime('%Y-%m-%d %H:%M:%S')}
 
 
 @flask_app.route('/')
 def index():
-    title = "Welcome to DocumentFeatureSelction API"
+    package_version = pkg_resources.get_distribution("DocumentFeatureSelection").version
     # index.html をレンダリングする
-    #return render_template('index.html', message=message, title=title)
-    return None
+    return render_template('index.html', version_info=package_version)
 
 
-@flask_app.route('/status/<task_id>')
+@flask_app.route('/status/<task_id>', methods=['Get'])
 def taskstatus(task_id):
     task = run_interface.AsyncResult(task_id)
     if task.state == 'PENDING':
@@ -195,21 +204,65 @@ def taskstatus(task_id):
     return jsonify(response)
 
 
-@flask_app.route('/run_job_api', methods=['POST'])
+@flask_app.route('/run_job_api', methods=['POST', 'Get'])
 def run_job_api():
     """* What you can do
     - You start document feature selection with your data
     - This process takes looooong time, so this API saves does not return result itself.
     - Instead, this API saves result into DB. And the API returns key of record.
+
+    * Format
+    - body json must have following fields
+        - method
+        - input_data
+    >>> {"method": "soa", "input_data": {"label1": [["I", "aa", "aa", "aa", "aa", "aa"],["bb", "aa", "aa", "aa", "aa", "aa"], ["I", "aa", "hero", "some", "ok", "aa"]], "label2": [ ["bb", "bb", "bb"], ["bb", "bb", "bb"], ["hero", "ok", "bb"], ["hero", "cc", "bb"]]}}
     """
+    if request.method == 'GET':
+        return render_template('index.html')
+
     body_object = request.get_json()
+    try:
+        method = body_object['method']
+        input_data = body_object['input_data']
 
-    method = body_object['method']
-    input_data = body_object['input_data']
+        started_at = datetime.now()
+        date = started_at.strftime('%Y-%m-%d')
+        job_id = '{}-{}'.format(date, str(uuid.uuid4()))
 
-    task = run_interface.apply_async(args=[input_data, method])
-    return jsonify({}), 202, {'Location': url_for('taskstatus',
-                                                  task_id=task.id)}
+        task = run_interface.apply_async(args=[job_id, input_data, method])
+        response_body = {'message': 'your job is started',
+                         'job_id': job_id,
+                         'task_id': task.id}
+        return jsonify(response_body), 202, {'Location': url_for('taskstatus', task_id=task.id)}
+    except:
+        response_body = {'message': 'Internal server error.',
+                         'traceback': traceback.format_exc()}
+        return jsonify(response_body), 500
+
+
+@flask_app.route('/get_result_api', methods=['POST', 'GET'])
+def get_result_api():
+    """* What you can do
+    - You can get processed result
+
+    * Format
+    - body json must have following fields
+        - job_id
+    >>> {"job_id" : "2017-02-25-3599a066-e590-4a0c-8b4d-4804f608a11d"}
+    """
+    try:
+        body_object = request.get_json()
+        job_id = body_object['job_id']
+        result_object = backend_database_handler.get_one_record(record_id=job_id)
+        response_body = {
+            'job_id': job_id,
+            'result': result_object
+        }
+        return jsonify(response_body), 200
+    except:
+        response_body = {'message': 'Internal server error.',
+                         'traceback': traceback.format_exc()}
+        return jsonify(response_body), 500
 
 
 if __name__ == '__main__':

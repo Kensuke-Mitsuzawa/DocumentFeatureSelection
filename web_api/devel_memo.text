@@ -7,6 +7,12 @@ To test manually
 3. start app
 4. send query with curl
 
+Before start you need apsw
+
+pip install --user https://github.com/rogerbinns/apsw/releases/download/3.17.0-r1/apsw-3.17.0-r1.zip \
+--global-option=fetch --global-option=--version --global-option=3.17.0 --global-option=--all \
+--global-option=build --global-option=--enable-all-extensions
+
 
 1. launch redis
 
