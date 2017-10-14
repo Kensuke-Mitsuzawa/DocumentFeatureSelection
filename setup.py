@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '1.3.5'
+__version__ = '1.3.6'
 
 import sys
 print('python version {}'.format(sys.version_info))

@@ -58,7 +58,8 @@ cdef float bns(
             tpr,
             fpr
         ))
-    cdef float bns_score = numpy.abs(norm.ppf(norm.cdf(tpr)) - norm.ppf(norm.cdf(fpr)))
+    cdef float bns_score = numpy.abs(norm.ppf(tpr) - norm.ppf(fpr))
+    # cdef float bns_score = numpy.abs(norm.ppf(norm.cdf(tpr)) - norm.ppf(norm.cdf(fpr)))
     return bns_score
 
 
