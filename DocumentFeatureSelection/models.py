@@ -193,6 +193,15 @@ class DataCsrMatrix(object):
                    self.path_working_dir)
 
 
+class ROW_COL_VAL(object):
+    """Data class to keep value of one item in CSR-matrix"""
+    __slots__ = ('row', 'col', 'val')
+    def __init__(self, row: int, col:int, val:int):
+        self.row = row
+        self.col = col
+        self.val = val
+
+
 class ScoredResultObject(object):
     def __init__(self,
                  scored_matrix:csr_matrix,
@@ -205,7 +214,6 @@ class ScoredResultObject(object):
         self.feature2id_dict = feature2id_dict
         self.method = method
         self.matrix_form = matrix_form
-        self.ROW_COL_VAL = collections.namedtuple('ROW_COL_VAL', 'row col val')
         # For keeping old version
         self.ScoreMatrix2ScoreDictionary = self.convert_score_matrix2score_record
 
@@ -260,7 +268,7 @@ class ScoredResultObject(object):
 
         return value
 
-    def make_non_zero_information(self, weight_csr_matrix: csr_matrix):
+    def make_non_zero_information(self, weight_csr_matrix: csr_matrix)->List[ROW_COL_VAL]:
         """Construct Tuple of matrix value. Return value is array of ROW_COL_VAL namedtuple.
 
         :param weight_csr_matrix:
@@ -273,6 +281,12 @@ class ScoredResultObject(object):
         column_indexes = row_col_index_array[1]
         assert len(row_indexes) == len(column_indexes)
 
+        value_index_items = [None] * len(row_indexes)  # type: List[ROW_COL_VAL]
+        for i in range(0, len(row_indexes)):
+            value_index_items[i] = ROW_COL_VAL(row_indexes[i],
+                                               column_indexes[i],
+                                               self.__get_value_index(row_indexes[i], column_indexes[i], weight_csr_matrix))
+        '''
         value_index_items = [
             self.ROW_COL_VAL(
                 row_indexes[i],
@@ -280,12 +294,12 @@ class ScoredResultObject(object):
                 self.__get_value_index(row_indexes[i], column_indexes[i], weight_csr_matrix)
             )
             for i
-            in range(0, len(row_indexes))]
+            in range(0, len(row_indexes))]'''
 
         return value_index_items
 
     def SUB_FUNC_feature_extraction(self,
-                                    row_col_val_tuple: typing.Tuple[int, int, int],
+                                    row_col_val_obj: ROW_COL_VAL,
                                     dict_index_information:Dict[str,Dict[str,str]]):
         """This function returns weighted score between label and words.
 
@@ -296,13 +310,12 @@ class ScoredResultObject(object):
         If 'iPhone' appears in 5 documents of 'IT' category document set, value must be 5.
         Even if 10 'iPhone' words in 'IT' category document set, value is still 5.
         """
-        assert isinstance(row_col_val_tuple, tuple)
-        assert isinstance(row_col_val_tuple, self.ROW_COL_VAL)
+        assert isinstance(row_col_val_obj, ROW_COL_VAL)
 
         return {
-            'score': row_col_val_tuple.val,
-            'label': self.get_label(row_col_val_tuple, dict_index_information['id2label']),
-            'word': self.get_word(row_col_val_tuple, dict_index_information['id2vocab'])
+            'score': row_col_val_obj.val,
+            'label': self.get_label(row_col_val_obj, dict_index_information['id2label']),
+            'word': self.get_word(row_col_val_obj, dict_index_information['id2vocab'])
         }
 
     def get_feature_dictionary(self,
@@ -343,18 +356,25 @@ class ScoredResultObject(object):
         dict_index_information['id2label'] = {value:key for key, value in label_group_dict.items()}
         dict_index_information['id2vocab'] = {value:key for key, value in vocabulary.items()}
 
-        # TODO cython化を検討
+        # TODO may be this func takes too much time. consider cython.
+        seq_score_objects = [None] * len(value_index_items)
+        for i, row_col_val_tuple in enumerate(value_index_items):
+            seq_score_objects[i] = self.SUB_FUNC_feature_extraction(
+                row_col_val_tuple,
+                dict_index_information)
+
+        '''
         seq_score_objects = [
             self.SUB_FUNC_feature_extraction(
                 row_col_val_tuple,
                 dict_index_information) for row_col_val_tuple in value_index_items
-            ]
+            ]'''
         logger.debug(msg='Finished making scored dictionary')
 
         return seq_score_objects
 
     def get_label(self, row_col_val_tuple, label_id)->str:
-        assert isinstance(row_col_val_tuple, self.ROW_COL_VAL)
+        assert isinstance(row_col_val_tuple, ROW_COL_VAL)
         assert isinstance(label_id, dict)
 
         label = label_id[row_col_val_tuple.row]
@@ -362,7 +382,7 @@ class ScoredResultObject(object):
         return label
 
     def get_word(self, row_col_val_tuple, vocabulary)->str:
-        assert isinstance(row_col_val_tuple, self.ROW_COL_VAL)
+        assert isinstance(row_col_val_tuple, ROW_COL_VAL)
         assert isinstance(vocabulary, dict)
         vocab = vocabulary[row_col_val_tuple.col]
 
