@@ -108,6 +108,15 @@ class SetDocumentInformation(object):
         self.label2id = dict_matrix_index['label2id']
         self.feature2id = dict_matrix_index['feature2id']
 
+        if isinstance(dict_matrix_index, dict):
+            pass
+        elif isinstance(dict_matrix_index, PersistentDict):
+            dict_matrix_index.sync()
+        elif isinstance(dict_matrix_index, SqliteDict):
+            dict_matrix_index.sync()
+        else:
+            raise Exception()
+
 
 class DataCsrMatrix(object):
     """* What you can do
@@ -197,6 +206,8 @@ class ScoredResultObject(object):
         self.method = method
         self.matrix_form = matrix_form
         self.ROW_COL_VAL = collections.namedtuple('ROW_COL_VAL', 'row col val')
+        # For keeping old version
+        self.ScoreMatrix2ScoreDictionary = self.convert_score_matrix2score_record
 
     def __conv_into_dict_format(self, word_score_items):
         out_format_structure = {}
@@ -207,7 +218,7 @@ class ScoredResultObject(object):
                 out_format_structure[item['label']].append({'word': item['word'], 'score': item['score']})
         return out_format_structure
 
-    def ScoreMatrix2ScoreDictionary(self,
+    def convert_score_matrix2score_record(self,
                                     outformat:str='items',
                                     sort_desc:bool=True,
                                     n_jobs:int=1):
