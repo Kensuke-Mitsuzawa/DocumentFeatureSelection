@@ -35,7 +35,6 @@ class TestDataConverter(unittest.TestCase):
 
         data_csr_matrix1 = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix1, DataCsrMatrix)
@@ -48,7 +47,6 @@ class TestDataConverter(unittest.TestCase):
 
         data_csr_matrix2 = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix2, DataCsrMatrix)
@@ -61,7 +59,6 @@ class TestDataConverter(unittest.TestCase):
 
         data_csr_matrix3 = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
             n_jobs=n_joblib_tasks
         )
         assert isinstance(data_csr_matrix3, DataCsrMatrix)
@@ -92,7 +89,6 @@ class TestDataConverter(unittest.TestCase):
 
         csr_matrix_information = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(csr_matrix_information, DataCsrMatrix)
@@ -131,23 +127,6 @@ class TestDataConverter(unittest.TestCase):
 
         data_csr_object = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
-            n_jobs=5
-        )
-
-        assert isinstance(data_csr_object.csr_matrix_, csr_matrix)
-        assert isinstance(data_csr_object.label2id_dict, dict)
-        assert isinstance(data_csr_object.vocabulary, dict)
-
-    def test_n_gram_multi_process_convert_data(self):
-        """checks if it works or not when n_process is more than 1, and 3-gram
-
-        :return:
-        """
-
-        data_csr_object = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
-            labeled_documents=self.input_dict,
-            ngram=3,
             n_jobs=5
         )
 

@@ -26,7 +26,6 @@ class TestBnsPython3(unittest.TestCase):
 
         data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.correct_input,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, DataCsrMatrix)
@@ -74,7 +73,6 @@ class TestBnsPython3(unittest.TestCase):
 
         data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=incorrect_input_dict,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, DataCsrMatrix)
@@ -106,7 +104,6 @@ class TestBnsPython3(unittest.TestCase):
 
         data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=incorrect_input_dict,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, DataCsrMatrix)

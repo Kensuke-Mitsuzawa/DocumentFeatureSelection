@@ -30,7 +30,6 @@ class TestPmiPython3(unittest.TestCase):
 
         data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=input_dict,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, DataCsrMatrix)
