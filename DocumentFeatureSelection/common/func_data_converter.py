@@ -19,9 +19,9 @@ def generate_document_dict(document_key:str,
     """This function gets Document-frequency count in given list of documents
     """
     assert isinstance(documents, list)
-    word_frequencies = [Counter(document) for document in documents]
+    feature_frequencies = [Counter(document) for document in documents]
     document_frequencies = Counter()
-    for word_frequency in word_frequencies: document_frequencies.update(word_frequency.keys())
+    for feat_freq in feature_frequencies: document_frequencies.update(feat_freq.keys())
 
     return (document_key, document_frequencies)
 
@@ -52,7 +52,7 @@ def make_multi_docs2term_freq_info(labeled_documents:AvailableInputTypes,
 
     return SetDocumentInformation(dict_matrix_index)
 
-
+'''
 def judge_feature_type(docs:List[List[Union[str, Tuple[Any]]]])->str:
     type_flag = None
     for document_list in docs:
@@ -65,7 +65,7 @@ def judge_feature_type(docs:List[List[Union[str, Tuple[Any]]]])->str:
             else:
                 logger.error(msg=docs)
                 raise TypeError('Feature object should be either of str or tuple')
-    return type_flag
+    return type_flag'''
 
 
 def make_multi_docs2doc_freq_info(labeled_documents:AvailableInputTypes,
@@ -76,8 +76,8 @@ def make_multi_docs2doc_freq_info(labeled_documents:AvailableInputTypes,
     - This function generates information for constructing document-frequency matrix.
     """
     assert isinstance(labeled_documents, (SqliteDict, dict))
-    type_flag = set([judge_feature_type(docs) for docs in labeled_documents.values()])
-    assert len(type_flag)==1
+    #type_flag = set([judge_feature_type(docs) for docs in labeled_documents.values()])
+    #assert len(type_flag)==1
 
     # todo 高速化を検討すること
     counted_frequency = joblib.Parallel(n_jobs=n_jobs)(

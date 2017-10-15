@@ -11,7 +11,8 @@ import logging
 import sys
 import numpy
 import tempfile
-from typing import Dict
+import json
+from typing import Dict, List, Tuple, Any
 python_version = sys.version_info
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
@@ -31,20 +32,22 @@ class DataConverter(object):
         - This function checks input data structure
         """
         # type: AvailableInputTypes->bool
-        assert isinstance(labeled_documents, (SqliteDict, dict))
+        assert isinstance(labeled_documents, AvailableInputTypes)
         for key, value in labeled_documents.items():
-            docs_in_label = labeled_documents[key]
+            docs_in_label = value
             if not isinstance(docs_in_label, list):
                 logger.error(msg=docs_in_label)
                 raise TypeError('It expects list object. But your object has {}'.format(type(docs_in_label)))
             for doc in docs_in_label:
                 for t in doc:
                     if isinstance(t, (str)):
-                        return True
+                        pass
                     elif isinstance(t, tuple):
-                        return True
+                        pass
+                    elif isinstance(t, list):
+                        pass
                     else:
-                        raise TypeError('Feature format must be either str or tuple')
+                        raise TypeError('Feature format must be either of [str, tuple, list]. {} object is detected.'.format(type(t)))
 
         return True
 
@@ -94,6 +97,42 @@ class DataConverter(object):
 
         return numpy.array(n_doc_distribution_list, dtype='i8')
 
+    def __make_feature_object2json_string(self, seq_feature_in_doc:List[str,List[str],Tuple[str,...]])->List[str]:
+        """Sub-method of make_feature_object2json_string()"""
+        replaced_seq_feature_in_doc = [None] * len(seq_feature_in_doc)  # type: List[str]
+        for i, feature_object in seq_feature_in_doc:
+            if isinstance(feature_object, str):
+                replaced_seq_feature_in_doc[i] = json.dumps(tuple([feature_object]), ensure_ascii=False)
+            elif isinstance(feature_object, (tuple, list)):
+                replaced_seq_feature_in_doc[i] = json.dumps(feature_object, ensure_ascii=False)
+            else:
+                raise Exception("feature type must be either of str,list,tuple. Detected={}".format(type(feature_object)))
+        else:
+            return replaced_seq_feature_in_doc
+
+    def make_feature_object2json_string(self, labeled_document:AvailableInputTypes):
+        """* What u can do
+        - This function converts feature-object in sequence object into json string.
+        - This function make every object into json string.
+            - string object -> json array which has one string. Ex. "feature" -> '["feature"]'
+            - list object -> json array. Ex. ["feature", "feature"] -> '["feature", "feature"]'
+            - tuple object -> json array. Ex. ("feature", "feature") -> '["feature", "feature"]'
+        * Parameters
+        - labeled_document: dict object which has key of 'label-name', and value is 2-dim list of features.
+
+        """
+        assert isinstance(labeled_document, AvailableInputTypes)
+        replaced_labeled_document = {key: [] for key in labeled_document}
+        for key, docs_in_label in labeled_document.items():
+            assert isinstance(docs_in_label, list)
+            replaced_docs_in_label = [None] * len(docs_in_label)
+            for i, doc_label in enumerate(docs_in_label):
+                replaced_docs_in_label[i] = self.__make_feature_object2json_string(doc_label)
+            else:
+                replaced_labeled_document[key] = replaced_docs_in_label
+        else:
+            return replaced_labeled_document
+
     def convert_multi_docs2term_frequency_matrix(self,
                                         labeled_documents:AvailableInputTypes,
                                         is_use_cache:bool=False,
@@ -111,6 +150,7 @@ class DataConverter(object):
         - path_working_dir: path to directory for saving cache files
         """
         self.__check_data_structure(labeled_documents)
+        # todo make_feature_object2json_string を導入してテスト
 
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
