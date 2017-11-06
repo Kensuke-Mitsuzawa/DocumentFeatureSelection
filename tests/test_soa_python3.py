@@ -29,7 +29,6 @@ class TestSoaPython3(unittest.TestCase):
     def test_soa_with_term_freq(self):
         data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, data_converter.DataCsrMatrix)
@@ -57,7 +56,6 @@ class TestSoaPython3(unittest.TestCase):
     def test_soa_doc_freq(self):
         data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=self.input_dict,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, data_converter.DataCsrMatrix)

@@ -1,3 +1,4 @@
+#! -*- coding: utf-8 -*-
 from DocumentFeatureSelection.models import DataCsrMatrix, ScoredResultObject, AvailableInputTypes
 from DocumentFeatureSelection.common import data_converter
 from DocumentFeatureSelection.soa.soa_python3 import SOA
@@ -28,9 +29,7 @@ def run_feature_selection(input_dict:AvailableInputTypes,
                           cache_backend='PersistentDict',
                           path_working_dir:str=None,
                           matrix_form=None,
-                          joblib_backend='auto',
-                          n_jobs:int=1,
-                          ngram:int=1)->ScoredResultObject:
+                          n_jobs:int=1)->ScoredResultObject:
     """A interface function of DocumentFeatureSelection package.
 
     * Args
@@ -53,11 +52,9 @@ def run_feature_selection(input_dict:AvailableInputTypes,
         """You get scored-matrix with term-frequency.
         ATTENTION: the input for TF-IDF MUST be term-frequency matrix. NOT document-frequency matrix
         """
-        matrix_data_object = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
+        matrix_data_object = data_converter.DataConverter().convert_multi_docs2term_frequency_matrix(
             labeled_documents=input_dict,
-            ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend,
             is_use_cache=is_use_cache,
             is_use_memmap=is_use_memmap,
             path_working_dir=path_working_dir,
@@ -71,11 +68,9 @@ def run_feature_selection(input_dict:AvailableInputTypes,
     elif method in ['soa', 'pmi'] and matrix_form is None:
         """You get scored-matrix with either of soa or pmi.
         """
-        matrix_data_object = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        matrix_data_object = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=input_dict,
-            ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend,
             is_use_cache=is_use_cache,
             is_use_memmap=is_use_memmap,
             path_working_dir=path_working_dir
@@ -104,11 +99,9 @@ def run_feature_selection(input_dict:AvailableInputTypes,
         """You get score-matrix with soa from term-frequency matrix.
         ATTENTION: the input for TF-IDF MUST be term-frequency matrix. NOT document-frequency matrix
         """
-        matrix_data_object = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
+        matrix_data_object = data_converter.DataConverter().convert_multi_docs2term_frequency_matrix(
             labeled_documents=input_dict,
-            ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend,
             is_use_cache=is_use_cache,
             is_use_memmap=is_use_memmap,
             path_working_dir=path_working_dir
@@ -132,11 +125,9 @@ def run_feature_selection(input_dict:AvailableInputTypes,
         if len(input_dict.keys()) >= 3:
             raise KeyError('input_dict must not have more than 3 keys if you would like to use BNS.')
 
-        matrix_data_object = data_converter.DataConverter().labeledMultiDocs2TermFreqMatrix(
+        matrix_data_object = data_converter.DataConverter().convert_multi_docs2term_frequency_matrix(
             labeled_documents=input_dict,
-            ngram=ngram,
             n_jobs=n_jobs,
-            joblib_backend=joblib_backend,
             is_use_cache=is_use_cache,
             is_use_memmap=is_use_memmap,
             path_working_dir=path_working_dir
@@ -162,5 +153,5 @@ def run_feature_selection(input_dict:AvailableInputTypes,
         label2id_dict=matrix_data_object.label2id_dict,
         feature2id_dict=matrix_data_object.vocabulary,
         method=method,
-        matrix_form=matrix_form
-    )
+        matrix_form=matrix_form,
+        frequency_matrix=matrix_data_object.csr_matrix_)

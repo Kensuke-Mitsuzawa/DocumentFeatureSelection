@@ -12,29 +12,25 @@ import tempfile
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 N_FEATURE_SWITCH_STRATEGY = 1000000
 
-'''
-def decode_into_utf8(string:str)->bytes:
-    """* what you can do
-    - convert string into etf-8
-    """
-    return string.encode('utf-8')'''
+
 
 def generate_document_dict(document_key:str,
                            documents:List[Union[List[str], Tuple[Any]]])->Tuple[str,Counter]:
     """This function gets Document-frequency count in given list of documents
     """
     assert isinstance(documents, list)
-    word_frequencies = [Counter(document) for document in documents]
+    feature_frequencies = [Counter(document) for document in documents]
     document_frequencies = Counter()
-    for word_frequency in word_frequencies: document_frequencies.update(word_frequency.keys())
+    for feat_freq in feature_frequencies: document_frequencies.update(feat_freq.keys())
 
     return (document_key, document_frequencies)
 
 
-def multiDocs2TermFreqInfo(labeled_documents:AvailableInputTypes,
+def make_multi_docs2term_freq_info(labeled_documents:AvailableInputTypes,
                            is_use_cache:bool=True,
                            path_work_dir:str=tempfile.mkdtemp()):
-    """This function generates information to construct term-frequency matrix
+    """* What u can do
+    - This function generates information to construct term-frequency matrix
     """
     assert isinstance(labeled_documents, (SqliteDict, dict))
 
@@ -56,7 +52,7 @@ def multiDocs2TermFreqInfo(labeled_documents:AvailableInputTypes,
 
     return SetDocumentInformation(dict_matrix_index)
 
-
+'''
 def judge_feature_type(docs:List[List[Union[str, Tuple[Any]]]])->str:
     type_flag = None
     for document_list in docs:
@@ -69,19 +65,21 @@ def judge_feature_type(docs:List[List[Union[str, Tuple[Any]]]])->str:
             else:
                 logger.error(msg=docs)
                 raise TypeError('Feature object should be either of str or tuple')
-    return type_flag
+    return type_flag'''
 
 
-def multiDocs2DocFreqInfo(labeled_documents:AvailableInputTypes,
-                          n_jobs:int=1,
-                          path_working_dir:str=tempfile.mkdtemp(),
-                          is_use_cache: bool = True)->SetDocumentInformation:
-    """This function generates information for constructing document-frequency matrix.
+def make_multi_docs2doc_freq_info(labeled_documents:AvailableInputTypes,
+                                  n_jobs:int=-1,
+                                  path_working_dir:str=tempfile.mkdtemp(),
+                                  is_use_cache: bool = True)->SetDocumentInformation:
+    """* What u can do
+    - This function generates information for constructing document-frequency matrix.
     """
     assert isinstance(labeled_documents, (SqliteDict, dict))
-    type_flag = set([judge_feature_type(docs) for docs in labeled_documents.values()])
-    assert len(type_flag)==1
+    #type_flag = set([judge_feature_type(docs) for docs in labeled_documents.values()])
+    #assert len(type_flag)==1
 
+    # todo 高速化を検討すること
     counted_frequency = joblib.Parallel(n_jobs=n_jobs)(
         joblib.delayed(generate_document_dict)(key, docs)
         for key, docs in sorted(labeled_documents.items(), key=lambda key_value_tuple: key_value_tuple[0]))
@@ -102,3 +100,8 @@ def multiDocs2DocFreqInfo(labeled_documents:AvailableInputTypes,
     dict_matrix_index['label2id'] = {label_freqCounter_tuple[0]:label_id for label_id, label_freqCounter_tuple in enumerate(counted_frequency)}
 
     return SetDocumentInformation(dict_matrix_index)
+
+
+# alias for old versions
+multiDocs2TermFreqInfo = make_multi_docs2term_freq_info
+multiDocs2DocFreqInfo = make_multi_docs2doc_freq_info

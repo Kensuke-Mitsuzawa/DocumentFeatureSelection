@@ -3,15 +3,16 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
-from DocumentFeatureSelection.common import utils, labeledMultiDocs2labeledDocsSet, ngram_constructor
-from DocumentFeatureSelection.models import DataCsrMatrix, AvailableInputTypes
+from DocumentFeatureSelection.common import utils, func_data_converter
+from DocumentFeatureSelection.models import DataCsrMatrix, AvailableInputTypes, PersistentDict
 from DocumentFeatureSelection import init_logger
 from sqlitedict import SqliteDict
 import logging
 import sys
 import numpy
 import tempfile
-from typing import Dict
+import json
+from typing import Dict, List, Tuple, Any, Union
 python_version = sys.version_info
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
@@ -21,27 +22,10 @@ __author__ = 'kensuke-mi'
 class DataConverter(object):
     """This class is for converting data type from dict-object into DataCsrMatrix-object which saves information of matrix.
     """
-    def __check_data_structure(self, labeled_documents):
-        # type: AvailableInputTypes->bool
-        """* what you can do
-        - This function checks input data structure
-        """
-        assert isinstance(labeled_documents, (SqliteDict, dict))
-        for key, value in labeled_documents.items():
-            docs_in_label = labeled_documents[key]
-            if not isinstance(docs_in_label, list):
-                logger.error(msg=docs_in_label)
-                raise TypeError('It expects list object. But your object has {}'.format(type(docs_in_label)))
-            for doc in docs_in_label:
-                for t in doc:
-                    if isinstance(t, (str)):
-                        return True
-                    elif isinstance(t, tuple):
-                        return True
-                    else:
-                        raise TypeError('Feature format must be either str or tuple')
-
-        return True
+    def __init__(self):
+        # for keeping old version
+        self.labeledMultiDocs2TermFreqMatrix = self.convert_multi_docs2term_frequency_matrix
+        self.labeledMultiDocs2DocFreqMatrix = self.convert_multi_docs2document_frequency_matrix
 
     def count_term_frequency_distribution(self, labeled_documents:AvailableInputTypes, label2id:Dict[str,int]):
         """Count term-distribution per label.
@@ -89,14 +73,48 @@ class DataConverter(object):
 
         return numpy.array(n_doc_distribution_list, dtype='i8')
 
-    def labeledMultiDocs2TermFreqMatrix(self,
+    def __make_feature_object2json_string(self, seq_feature_in_doc:List[Union[str,List[str],Tuple[str,...]]])->List[str]:
+        """Sub-method of make_feature_object2json_string()"""
+        replaced_seq_feature_in_doc = [None] * len(seq_feature_in_doc)  # type: List[str]
+        for i, feature_object in enumerate(seq_feature_in_doc):
+            if isinstance(feature_object, str):
+                replaced_seq_feature_in_doc[i] = json.dumps(tuple([feature_object]), ensure_ascii=False)
+            elif isinstance(feature_object, (tuple, list)):
+                replaced_seq_feature_in_doc[i] = json.dumps(feature_object, ensure_ascii=False)
+            else:
+                raise Exception("feature type must be either of str,list,tuple. Detected={}".format(type(feature_object)))
+        else:
+            return replaced_seq_feature_in_doc
+
+    def make_feature_object2json_string(self, labeled_document:AvailableInputTypes)->Dict[str,AvailableInputTypes]:
+        """* What u can do
+        - This function converts feature-object in sequence object into json string.
+        - This function make every object into json string.
+            - string object -> json array which has one string. Ex. "feature" -> '["feature"]'
+            - list object -> json array. Ex. ["feature", "feature"] -> '["feature", "feature"]'
+            - tuple object -> json array. Ex. ("feature", "feature") -> '["feature", "feature"]'
+        * Parameters
+        - labeled_document: dict object which has key of 'label-name', and value is 2-dim list of features.
+
+        """
+        assert isinstance(labeled_document, (dict,PersistentDict,SqliteDict))
+        replaced_labeled_document = {key: [] for key in labeled_document}
+        for key, docs_in_label in labeled_document.items():
+            assert isinstance(docs_in_label, list)
+            replaced_docs_in_label = [None] * len(docs_in_label)
+            for i, doc_label in enumerate(docs_in_label):
+                replaced_docs_in_label[i] = self.__make_feature_object2json_string(doc_label)
+            else:
+                replaced_labeled_document[key] = replaced_docs_in_label
+        else:
+            return replaced_labeled_document
+
+    def convert_multi_docs2term_frequency_matrix(self,
                                         labeled_documents:AvailableInputTypes,
                                         is_use_cache:bool=False,
                                         is_use_memmap:bool=False,
                                         path_working_dir:str=tempfile.mkdtemp(),
-                                        joblib_backend:str='auto',
                                         cache_backend:str='PersistentDict',
-                                        ngram:int=1,
                                         n_jobs:int=1):
         """* What you can do
         - This function makes TERM-frequency matrix for TF-IDF calculation.
@@ -107,18 +125,11 @@ class DataConverter(object):
         - is_use_cache: boolean flag to use disk-drive for keeping objects which tends to be huge.
         - path_working_dir: path to directory for saving cache files
         """
-        self.__check_data_structure(labeled_documents)
-
-        if ngram > 1:
-            labeled_documents = ngram_constructor.ngram_constructor(
-                labeled_documents=labeled_documents,
-                ngram=ngram,
-                n_jobs=n_jobs
-            )
+        labeled_documents = self.make_feature_object2json_string(labeled_documents)
 
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
-        set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2TermFreqInfo(labeled_documents)
+        set_document_information = func_data_converter.make_multi_docs2term_freq_info(labeled_documents)
 
         # count n(docs) per label
         n_docs_distribution = self.count_document_distribution(
@@ -143,14 +154,12 @@ class DataConverter(object):
             cache_backend=cache_backend
         )
 
-    def labeledMultiDocs2DocFreqMatrix(self,
+    def convert_multi_docs2document_frequency_matrix(self,
                                        labeled_documents:AvailableInputTypes,
                                        is_use_cache:bool=False,
                                        is_use_memmap:bool=False,
                                        path_working_dir:str=None,
-                                       ngram:int=1,
-                                       n_jobs:int=1,
-                                       joblib_backend:str='auto')->DataCsrMatrix:
+                                       n_jobs:int=1)->DataCsrMatrix:
         """This function makes document-frequency matrix. Document-frequency matrix is scipy.csr_matrix.
 
         * Input object
@@ -162,19 +171,12 @@ class DataConverter(object):
         * Output
         - DataCsrMatrix object.
         """
-        self.__check_data_structure(labeled_documents)
-
-        if ngram > 1:
-            labeled_documents = ngram_constructor.ngram_constructor(
-                labeled_documents=labeled_documents,
-                ngram=ngram,
-                n_jobs=n_jobs)
+        labeled_documents = self.make_feature_object2json_string(labeled_documents)
 
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
-        set_document_information = labeledMultiDocs2labeledDocsSet.multiDocs2DocFreqInfo(labeled_documents,
-                                                                                         n_jobs=n_jobs)
-        assert isinstance(set_document_information, labeledMultiDocs2labeledDocsSet.SetDocumentInformation)
+        set_document_information = func_data_converter.make_multi_docs2doc_freq_info(labeled_documents,n_jobs=n_jobs)
+        assert isinstance(set_document_information, func_data_converter.SetDocumentInformation)
 
         # count n(docs) per label
         n_docs_distribution = self.count_document_distribution(
@@ -196,61 +198,3 @@ class DataConverter(object):
             is_use_memmap=is_use_memmap,
             path_working_dir=path_working_dir
         )
-
-
-'''
-# -------------------------------------------------------------------------------------------------------------------
-# function for output
-
-
-def __conv_into_dict_format(word_score_items):
-    out_format_structure = {}
-    for item in word_score_items:
-        if item['label'] not in out_format_structure :
-            out_format_structure[item['label']] = [{'word': item['word'], 'score': item['score']}]
-        else:
-            out_format_structure[item['label']].append({'word': item['word'], 'score': item['score']})
-    return out_format_structure
-
-
-def scored_matrix2score_dictionary(scored_matrix:csr_matrix,
-                                label2id_dict:Dict[str,int],
-                                feature2id_dict:Dict[FeatureType,int],
-                                outformat:str='items',
-                                sort_desc:bool=True,
-                                n_jobs:int=1):
-    """Get dictionary structure of PMI featured scores.
-
-    You can choose 'dict' or 'items' for ```outformat``` parameter.
-
-    If outformat='dict', you get
-
-    >>> {label_name:{feature: score}}
-
-    Else if outformat='items', you get
-
-    >>> [{feature: score}]
-    """
-
-    scored_objects = utils.get_feature_dictionary(
-        weighted_matrix=scored_matrix,
-        vocabulary=feature2id_dict,
-        label_group_dict=label2id_dict,
-        n_jobs=n_jobs
-    )
-
-    if sort_desc: scored_objects = \
-        sorted(scored_objects, key=lambda x: x['score'], reverse=True)
-
-    if outformat=='dict':
-        out_format_structure = __conv_into_dict_format(scored_objects)
-    elif outformat=='items':
-        out_format_structure = scored_objects
-    else:
-        raise ValueError('outformat must be either of {dict, items}')
-
-    return out_format_structure
-
-# for old version code
-ScoreMatrix2ScoreDictionary = scored_matrix2score_dictionary
-'''

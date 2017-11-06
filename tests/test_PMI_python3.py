@@ -30,7 +30,6 @@ class TestPmiPython3(unittest.TestCase):
 
         data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
             labeled_documents=input_dict,
-            ngram=1,
             n_jobs=5
         )
         assert isinstance(data_csr_matrix, DataCsrMatrix)
@@ -72,9 +71,7 @@ class TestPmiPython3(unittest.TestCase):
             label2id_dict=self.label2id_dict,
             feature2id_dict=self.vocabulary
         ).ScoreMatrix2ScoreDictionary(
-            outformat='items',
-            n_jobs=1
-        )
+            outformat='items')
 
         assert isinstance(pmi_scored_dict, list)
         import pprint
