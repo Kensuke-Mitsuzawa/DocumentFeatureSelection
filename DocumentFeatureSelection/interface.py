@@ -153,5 +153,5 @@ def run_feature_selection(input_dict:AvailableInputTypes,
         label2id_dict=matrix_data_object.label2id_dict,
         feature2id_dict=matrix_data_object.vocabulary,
         method=method,
-        matrix_form=matrix_form
-    )
+        matrix_form=matrix_form,
+        frequency_matrix=matrix_data_object.csr_matrix_)

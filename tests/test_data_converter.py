@@ -169,19 +169,19 @@ class TestDataConverter(unittest.TestCase):
         assert isinstance(vocabulary, dict)
 
         n_correct_sample = 3
-        n_correct_featute = 8
+        n_correct_feature = 5
 
         assert csr_matrix_.shape[0] == n_correct_sample
-        assert csr_matrix_.shape[1] == n_correct_featute
+        assert csr_matrix_.shape[1] == n_correct_feature
 
         dense_matrix_constructed_matrix = csr_matrix_.toarray()
 
         # vocaburary id of correct matrix is {'cc': 3, 'aa': 1, 'some': 6, 'xx': 7, 'I': 0, 'ok': 5, 'hero': 4, 'bb': 2}
         # label id of correct matrix is {'label_c': 2, 'label_a': 0, 'label_b': 1}
         correct_array_numpy = numpy.array(
-            [[2, 3, 1, 0, 1, 1, 1, 0],
-             [0, 0, 4, 1, 2, 1, 0, 0],
-             [0, 1, 1, 4, 0, 0, 0, 2]
+            [[1.0, 3.0, 0.0, 2.0, 0.0],
+             [0.0, 0.0, 1.0, 3.0, 1.0],
+             [1.0, 1.0, 0.0, 2.0, 1.0],
          ]).astype(numpy.int64)
         assert numpy.array_equal(correct_array_numpy, dense_matrix_constructed_matrix)
 

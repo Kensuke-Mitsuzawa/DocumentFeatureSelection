@@ -71,9 +71,7 @@ class TestPmiPython3(unittest.TestCase):
             label2id_dict=self.label2id_dict,
             feature2id_dict=self.vocabulary
         ).ScoreMatrix2ScoreDictionary(
-            outformat='items',
-            n_jobs=1
-        )
+            outformat='items')
 
         assert isinstance(pmi_scored_dict, list)
         import pprint

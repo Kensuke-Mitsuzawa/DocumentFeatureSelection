@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from DocumentFeatureSelection.common import utils, func_data_converter
-from DocumentFeatureSelection.models import DataCsrMatrix, AvailableInputTypes
+from DocumentFeatureSelection.models import DataCsrMatrix, AvailableInputTypes, PersistentDict
 from DocumentFeatureSelection import init_logger
 from sqlitedict import SqliteDict
 import logging
@@ -12,7 +12,7 @@ import sys
 import numpy
 import tempfile
 import json
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Union
 python_version = sys.version_info
 logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
@@ -26,30 +26,6 @@ class DataConverter(object):
         # for keeping old version
         self.labeledMultiDocs2TermFreqMatrix = self.convert_multi_docs2term_frequency_matrix
         self.labeledMultiDocs2DocFreqMatrix = self.convert_multi_docs2document_frequency_matrix
-
-    def __check_data_structure(self, labeled_documents):
-        """* what you can do
-        - This function checks input data structure
-        """
-        # type: AvailableInputTypes->bool
-        assert isinstance(labeled_documents, AvailableInputTypes)
-        for key, value in labeled_documents.items():
-            docs_in_label = value
-            if not isinstance(docs_in_label, list):
-                logger.error(msg=docs_in_label)
-                raise TypeError('It expects list object. But your object has {}'.format(type(docs_in_label)))
-            for doc in docs_in_label:
-                for t in doc:
-                    if isinstance(t, (str)):
-                        pass
-                    elif isinstance(t, tuple):
-                        pass
-                    elif isinstance(t, list):
-                        pass
-                    else:
-                        raise TypeError('Feature format must be either of [str, tuple, list]. {} object is detected.'.format(type(t)))
-
-        return True
 
     def count_term_frequency_distribution(self, labeled_documents:AvailableInputTypes, label2id:Dict[str,int]):
         """Count term-distribution per label.
@@ -97,10 +73,10 @@ class DataConverter(object):
 
         return numpy.array(n_doc_distribution_list, dtype='i8')
 
-    def __make_feature_object2json_string(self, seq_feature_in_doc:List[str,List[str],Tuple[str,...]])->List[str]:
+    def __make_feature_object2json_string(self, seq_feature_in_doc:List[Union[str,List[str],Tuple[str,...]]])->List[str]:
         """Sub-method of make_feature_object2json_string()"""
         replaced_seq_feature_in_doc = [None] * len(seq_feature_in_doc)  # type: List[str]
-        for i, feature_object in seq_feature_in_doc:
+        for i, feature_object in enumerate(seq_feature_in_doc):
             if isinstance(feature_object, str):
                 replaced_seq_feature_in_doc[i] = json.dumps(tuple([feature_object]), ensure_ascii=False)
             elif isinstance(feature_object, (tuple, list)):
@@ -110,7 +86,7 @@ class DataConverter(object):
         else:
             return replaced_seq_feature_in_doc
 
-    def make_feature_object2json_string(self, labeled_document:AvailableInputTypes):
+    def make_feature_object2json_string(self, labeled_document:AvailableInputTypes)->Dict[str,AvailableInputTypes]:
         """* What u can do
         - This function converts feature-object in sequence object into json string.
         - This function make every object into json string.
@@ -121,7 +97,7 @@ class DataConverter(object):
         - labeled_document: dict object which has key of 'label-name', and value is 2-dim list of features.
 
         """
-        assert isinstance(labeled_document, AvailableInputTypes)
+        assert isinstance(labeled_document, (dict,PersistentDict,SqliteDict))
         replaced_labeled_document = {key: [] for key in labeled_document}
         for key, docs_in_label in labeled_document.items():
             assert isinstance(docs_in_label, list)
@@ -149,8 +125,7 @@ class DataConverter(object):
         - is_use_cache: boolean flag to use disk-drive for keeping objects which tends to be huge.
         - path_working_dir: path to directory for saving cache files
         """
-        self.__check_data_structure(labeled_documents)
-        # todo make_feature_object2json_string を導入してテスト
+        labeled_documents = self.make_feature_object2json_string(labeled_documents)
 
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
@@ -196,12 +171,11 @@ class DataConverter(object):
         * Output
         - DataCsrMatrix object.
         """
-        self.__check_data_structure(labeled_documents)
+        labeled_documents = self.make_feature_object2json_string(labeled_documents)
 
         logger.debug(msg='Now pre-processing before CSR matrix')
         # convert data structure
-        set_document_information = func_data_converter.make_multi_docs2doc_freq_info(labeled_documents,
-                                                                                     n_jobs=n_jobs)
+        set_document_information = func_data_converter.make_multi_docs2doc_freq_info(labeled_documents,n_jobs=n_jobs)
         assert isinstance(set_document_information, func_data_converter.SetDocumentInformation)
 
         # count n(docs) per label
