@@ -409,8 +409,12 @@ class ScoredResultObject(object):
         vocab = vocabulary[row_col_val_tuple.col]
         try:
             feature_object = json.loads(vocab)
+            if len(feature_object)==1:
+                # When feature is word, the length is 1 #
+                feature_object = feature_object[0]
         except:
             feature_object = vocab
+
 
         return feature_object
 
