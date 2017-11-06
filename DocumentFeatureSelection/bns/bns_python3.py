@@ -62,7 +62,8 @@ def bns(X:Union[memmap, csr_matrix],
             fpr
         ))
 
-    bns_score = np.abs(norm.ppf(norm.cdf(tpr)) - norm.ppf(norm.cdf(fpr)))
+    #bns_score = np.abs(norm.ppf(norm.cdf(tpr)) - norm.ppf(norm.cdf(fpr)))
+    bns_score = abs(norm.ppf(tpr) - norm.ppf(fpr))
     return bns_score
 
 
