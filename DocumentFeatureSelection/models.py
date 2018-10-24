@@ -5,8 +5,11 @@ from sqlitedict import SqliteDict
 from tempfile import mkdtemp
 from DocumentFeatureSelection.init_logger import logger
 from numpy import ndarray, int32, int64
-import pickle, json, csv, os, shutil
-import logging
+import pickle
+import json
+import csv
+import os
+import shutil
 
 
 # this class is from https://code.activestate.com/recipes/576642/
@@ -123,15 +126,15 @@ class DataCsrMatrix(object):
                  'n_docs_distribution', 'n_term_freq_distribution', 'path_working_dir']
 
     def __init__(self,
-                 csr_matrix_:csr_matrix,
-                 label2id_dict:Dict[str,int],
-                 vocabulary:Dict[str,int],
-                 n_docs_distribution:ndarray,
-                 n_term_freq_distribution:ndarray,
-                 is_use_cache:bool=False,
-                 is_use_memmap:bool=False,
-                 cache_backend:str='PersistentDict',
-                 path_working_dir:str=None):
+                 csr_matrix_: csr_matrix,
+                 label2id_dict: Dict[str, int],
+                 vocabulary: Dict[str, int],
+                 n_docs_distribution: ndarray,
+                 n_term_freq_distribution: ndarray,
+                 is_use_cache: bool=False,
+                 is_use_memmap: bool=False,
+                 cache_backend: str='PersistentDict',
+                 path_working_dir: str=None):
         """* Parameters
         -----------------
         - csr_matrix_: Matrix object which saves term frequency or document frequency
@@ -151,8 +154,11 @@ class DataCsrMatrix(object):
         self.n_term_freq_distribution = n_term_freq_distribution
         self.cache_backend = cache_backend
 
-        if path_working_dir is None: self.path_working_dir = mkdtemp()
-        else: self.path_working_dir = path_working_dir
+        if (is_use_memmap or is_use_cache) and path_working_dir is None:
+            self.path_working_dir = mkdtemp()
+            logger.info("Temporary files are at {}".format(self.path_working_dir))
+        else:
+            self.path_working_dir = path_working_dir
 
         if is_use_cache:
             """You use disk-drive for keeping object.
@@ -163,7 +169,12 @@ class DataCsrMatrix(object):
             self.vocabulary = vocabulary
 
             self.label2id_dict = self.initialize_cache_dict_object(path_label_2_dict_cache_obj)
-            self.label2id_dict = label2id_dict
+            logger.info("Now saving into local file...")
+            for k, v in label2id_dict.items():
+                self.label2id_dict[k] = v
+            if isinstance(self.label2id_dict, PersistentDict):
+                self.label2id_dict.sync()
+
         else:
             """Keep everything on memory
             """
@@ -186,7 +197,7 @@ class DataCsrMatrix(object):
         else:
             raise Exception('No such cache_backend option named {}'.format(self.cache_backend))
 
-    def initialize_memmap_object(self, matrix_object:csr_matrix, path_memmap_object:str)->memmap:
+    def initialize_memmap_object(self, matrix_object: csr_matrix, path_memmap_object: str)->memmap:
         fp = memmap(path_memmap_object, dtype='float64', mode='w+', shape=matrix_object.shape)
         fp[:] = matrix_object.todense()[:]
         return fp
@@ -308,8 +319,8 @@ class ScoredResultObject(object):
 
     def SUB_FUNC_feature_extraction(self,
                                     weight_row_col_val_obj: ROW_COL_VAL,
-                                    dict_index_information:Dict[str,Dict[str,str]],
-                                    dict_position2value:Dict[Tuple[int,int],float]=None)->Dict[str,Any]:
+                                    dict_index_information: Dict[str, Dict[str, str]],
+                                    dict_position2value: Dict[Tuple[int, int], float]=None)->Dict[str, Any]:
         """This function returns weighted score between label and words.
 
         Input csr matrix must be 'document-frequency' matrix, where records #document that word appears in document set.
@@ -337,12 +348,12 @@ class ScoredResultObject(object):
         return feature_score_record
 
     def get_feature_dictionary(self,
-                               weighted_matrix:csr_matrix,
-                               vocabulary:Dict[str,int],
-                               label_group_dict:Dict[str,int],
+                               weighted_matrix: csr_matrix,
+                               vocabulary:Dict[str, int],
+                               label_group_dict:Dict[str, int],
                                cache_backend: str = 'PersistentDict',
-                               is_use_cache:bool=True,
-                               frequency_matrix:csr_matrix=None)->List[Dict[str,Any]]:
+                               is_use_cache: bool=True,
+                               frequency_matrix: csr_matrix=None)->List[Dict[str, Any]]:
         """* What you can do
         - Get dictionary structure from weighted-featured scores.
         """

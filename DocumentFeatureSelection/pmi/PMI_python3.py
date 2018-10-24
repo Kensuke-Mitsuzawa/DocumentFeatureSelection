@@ -91,7 +91,7 @@ class PMI(object):
         feature_range = list(range(0, matrix_size[1]))
         n_total_document = sum(n_docs_distribution)
 
-        logger.debug(msg='Start calculating PMI with n(process)={}'.format(n_jobs))
+        logger.debug(msg='Start calculating PMI')
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
 
         if use_cython:

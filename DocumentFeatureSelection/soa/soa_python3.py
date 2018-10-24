@@ -58,12 +58,12 @@ class SOA(object):
         pass
 
     def fit_transform(self,
-                      X:Union[memmap, csr_matrix],
-                      unit_distribution:numpy.ndarray,
-                      n_jobs=1,
+                      X: Union[memmap, csr_matrix],
+                      unit_distribution: numpy.ndarray,
+                      n_jobs: int=1,
                       verbose=False,
-                      joblib_backend='multiprocessing',
-                      use_cython:bool=False):
+                      joblib_backend: str='multiprocessing',
+                      use_cython: bool=False):
         """* What you can do
         - Get SOA weighted-score matrix.
         - You can get fast-speed with Cython
@@ -76,7 +76,7 @@ class SOA(object):
         feature_range = list(range(0, matrix_size[1]))
         n_total_document = sum(unit_distribution)
 
-        logger.debug(msg='Start calculating SOA with n(process)={}'.format(n_jobs))
+        logger.debug(msg='Start calculating SOA')
         logger.debug(msg='size(input_matrix)={} * {}'.format(X.shape[0], X.shape[1]))
 
         if use_cython:
@@ -116,12 +116,12 @@ class SOA(object):
 
         return soa_featured_csr_matrix
 
-
-    def docId_word_soa(self, X:Union[memmap, csr_matrix],
-                       unit_distribution:numpy.ndarray,
-                       n_total_doc:int,
-                       feature_index:int,
-                       sample_index:int, verbose=False):
+    def docId_word_soa(self,
+                       X: Union[memmap, csr_matrix],
+                       unit_distribution: numpy.ndarray,
+                       n_total_doc: int,
+                       feature_index: int,
+                       sample_index: int, verbose=False):
         """
         """
         assert isinstance(X, (memmap, csr_matrix))

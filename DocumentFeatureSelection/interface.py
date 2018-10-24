@@ -6,6 +6,7 @@ from DocumentFeatureSelection.pmi.PMI_python3 import PMI
 from DocumentFeatureSelection.tf_idf.tf_idf import TFIDF
 from DocumentFeatureSelection.bns.bns_python3 import BNS
 from DocumentFeatureSelection.init_logger import logger
+from tempfile import mkdtemp
 from typing import Dict
 from scipy.sparse.csr import csr_matrix
 import shutil
@@ -49,8 +50,9 @@ def run_feature_selection(input_dict: AvailableInputTypes,
     if method not in METHOD_NAMES:
         raise Exception('method name must be either of {}. Yours: {}'.format(METHOD_NAMES, method))
 
-    if is_use_cache or is_use_memmap:
-        logger.debug("Temporary files are created under {}".format(path_working_dir))
+    if (is_use_cache or is_use_memmap) and path_working_dir is None:
+        path_working_dir = mkdtemp()
+        logger.info("Temporary files are created under {}".format(path_working_dir))
 
     if method == 'tf_idf':
         """You get scored-matrix with term-frequency.
@@ -100,9 +102,8 @@ def run_feature_selection(input_dict: AvailableInputTypes,
             raise Exception()
 
     elif method == 'soa' and matrix_form == 'term_freq':
-        """You get score-matrix with soa from term-frequency matrix.
-        ATTENTION: the input for TF-IDF MUST be term-frequency matrix. NOT document-frequency matrix
-        """
+        # You get score-matrix with soa from term-frequency matrix.
+        # ATTENTION: the input for TF-IDF MUST be term-frequency matrix. NOT document-frequency matrix
         matrix_data_object = data_converter.DataConverter().convert_multi_docs2term_frequency_matrix(
             labeled_documents=input_dict,
             n_jobs=n_jobs,
@@ -120,9 +121,8 @@ def run_feature_selection(input_dict: AvailableInputTypes,
         assert isinstance(scored_sparse_matrix, csr_matrix)
 
     elif method == 'bns':
-        """You get scored-matrix with bns.
-        ATTENTION: #label should be 2 always.
-        """
+        # You get scored-matrix with bns.
+        # ATTENTION: #label should be 2 always.
         # Consider shorter label name as positive label
         # (positive and negative does NOT have any meaning in this context) #
         positive_label_name = sorted(input_dict.keys(), key=lambda x: len(x))[0]

@@ -108,12 +108,12 @@ class DataConverter(object):
             return replaced_labeled_document
 
     def convert_multi_docs2term_frequency_matrix(self,
-                                        labeled_documents:AvailableInputTypes,
-                                        is_use_cache:bool=False,
-                                        is_use_memmap:bool=False,
-                                        path_working_dir:str=tempfile.mkdtemp(),
-                                        cache_backend:str='PersistentDict',
-                                        n_jobs:int=1):
+                                                 labeled_documents: AvailableInputTypes,
+                                                 is_use_cache: bool = False,
+                                                 is_use_memmap: bool = False,
+                                                 path_working_dir: str = tempfile.mkdtemp(),
+                                                 cache_backend: str = 'PersistentDict',
+                                                 n_jobs: int = 1):
         """* What you can do
         - This function makes TERM-frequency matrix for TF-IDF calculation.
         - TERM-frequency matrix is scipy.csr_matrix.

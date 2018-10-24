@@ -37,7 +37,6 @@ input_dict = {
 tf_idf_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='tf_idf',
-    ngram=1,
     n_jobs=5
 )
 
@@ -46,7 +45,6 @@ tf_idf_scored_object = interface.run_feature_selection(
 pmi_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='pmi',
-    ngram=1,
     n_jobs=1,
     use_cython=False
 )
@@ -57,7 +55,6 @@ pprint.pprint(pmi_scored_object.ScoreMatrix2ScoreDictionary())
 pmi_scored_object_cython = interface.run_feature_selection(
     input_dict=input_dict,
     method='pmi',
-    ngram=1,
     n_jobs=1,
     use_cython=True
 )
@@ -68,7 +65,6 @@ pprint.pprint(pmi_scored_object_cython.ScoreMatrix2ScoreDictionary())
 soa_scored_object = interface.run_feature_selection(
     input_dict=input_dict,
     method='soa',
-    ngram=1,
     n_jobs=5
 )
 pprint.pprint(soa_scored_object.ScoreMatrix2ScoreDictionary())
@@ -76,7 +72,6 @@ pprint.pprint(soa_scored_object.ScoreMatrix2ScoreDictionary())
 soa_scored_object_cython = interface.run_feature_selection(
     input_dict=input_dict,
     method='soa',
-    ngram=1,
     n_jobs=1,
     use_cython=True
 )

@@ -2,10 +2,9 @@
 __author__ = 'kensuke-mi'
 
 from DocumentFeatureSelection import interface
+from DocumentFeatureSelection.init_logger import logger
 import logging
 import pprint
-logger = logging.getLogger('sample usage')
-logger.level = logging.ERROR
 
 # ======================================================================================================
 # expert usage
@@ -48,7 +47,6 @@ pprint.pprint(pmi_scored_object.ScoreMatrix2ScoreDictionary())
 pmi_scored_object_cython = interface.run_feature_selection(
     input_dict=input_dict_tuple_feature,
     method='pmi',
-    n_jobs=1,
     use_cython=True
 )
 pprint.pprint(pmi_scored_object_cython.ScoreMatrix2ScoreDictionary())
@@ -67,7 +65,6 @@ pprint.pprint(soa_scored_object.ScoreMatrix2ScoreDictionary())
 soa_scored_object_cython = interface.run_feature_selection(
     input_dict=input_dict_tuple_feature,
     method='soa',
-    n_jobs=1,
     use_cython=True
 )
 pprint.pprint(soa_scored_object_cython.ScoreMatrix2ScoreDictionary())
