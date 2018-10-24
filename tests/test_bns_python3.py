@@ -24,7 +24,7 @@ class TestBnsPython3(unittest.TestCase):
 
     def test_fit_transform(self):
 
-        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=self.correct_input,
             n_jobs=5
         )
@@ -34,19 +34,21 @@ class TestBnsPython3(unittest.TestCase):
         n_docs_distribution = data_csr_matrix.n_docs_distribution
         vocabulary = data_csr_matrix.vocabulary
 
-        bns_score_csr_matrix = bns_python3.BNS().fit_transform(X=csr_matrix_, y=None,
-                                        unit_distribution=n_docs_distribution,
-                                        verbose=True)
+        bns_score_csr_matrix = bns_python3.BNS().fit_transform(X=csr_matrix_,
+                                                               y=None,
+                                                               unit_distribution=n_docs_distribution,
+                                                               verbose=True)
         assert isinstance(bns_score_csr_matrix, csr_matrix)
 
         bns_scores_dict = ScoredResultObject(
             scored_matrix=bns_score_csr_matrix,
             label2id_dict=label2id_dict,
             feature2id_dict=vocabulary
-        ).ScoreMatrix2ScoreDictionary()
-        assert isinstance(bns_scores_dict, list)
-        import pprint
-        pprint.pprint(bns_scores_dict)
+        ).convert_score_matrix2score_record()
+        self.assertTrue(bns_scores_dict, list)
+        #assert isinstance(bns_scores_dict, list)
+        #import pprint
+        #pprint.pprint(bns_scores_dict)
 
 
     def test_check_input_error(self):
@@ -71,7 +73,7 @@ class TestBnsPython3(unittest.TestCase):
             ]
         }
 
-        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=incorrect_input_dict,
             n_jobs=5
         )
@@ -102,7 +104,7 @@ class TestBnsPython3(unittest.TestCase):
             ]
         }
 
-        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=incorrect_input_dict,
             n_jobs=5
         )
@@ -114,7 +116,6 @@ class TestBnsPython3(unittest.TestCase):
                                         y=None,
                                         unit_distribution=n_docs_distribution,
                                         use_cython=True)
-        print(result_bns)
 
 
 if __name__ == '__main__':

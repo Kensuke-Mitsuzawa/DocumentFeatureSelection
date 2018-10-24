@@ -72,8 +72,8 @@ class TestDataModels(unittest.TestCase):
             n_jobs=5
         )
         assert isinstance(pmi_scored_dictionary_objects, list)
-        for d in pmi_scored_dictionary_objects: assert isinstance(d, dict)
-        logging.debug(pmi_scored_dictionary_objects)
+        for d in pmi_scored_dictionary_objects:
+            assert isinstance(d, dict)
 
         # when sort is True, cut_zero is False, outformat is dict
         pmi_scored_dictionary_objects = ScoredResultObject(
@@ -99,8 +99,8 @@ class TestDataModels(unittest.TestCase):
             n_jobs=5
         )
         assert isinstance(pmi_scored_dictionary_objects, list)
-        for d in pmi_scored_dictionary_objects: assert isinstance(d, dict)
-        logging.debug(pmi_scored_dictionary_objects)
+        for d in pmi_scored_dictionary_objects:
+            assert isinstance(d, dict)
 
 
 if __name__ == '__main__':

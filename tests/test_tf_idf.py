@@ -46,7 +46,7 @@ class TestTfIdf(unittest.TestCase):
              ]
         )
 
-        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=input_dict,
             n_jobs=-1
         )
@@ -64,10 +64,7 @@ class TestTfIdf(unittest.TestCase):
         )
         assert isinstance(tf_idf_weighted_matrix, csr_matrix)
 
-
     def test_output_result_pmi(self):
-        import numpy
-
         tf_idf_weighted_matrix = tf_idf.TFIDF().fit_transform(
             X=self.csr_matrix_,
         )
@@ -77,13 +74,10 @@ class TestTfIdf(unittest.TestCase):
             scored_matrix=tf_idf_weighted_matrix,
             label2id_dict=self.label2id_dict,
             feature2id_dict=self.vocabulary,
-        ).ScoreMatrix2ScoreDictionary(
-            outformat='items'
-        )
-
+        ).convert_score_matrix2score_record(outformat='items')
+        self.assertTrue(isinstance(tf_idf_scored_dict, list))
         assert isinstance(tf_idf_scored_dict, list)
-        import pprint
-        pprint.pprint(tf_idf_scored_dict)
+
 
 if __name__ == '__main__':
     unittest.main()
