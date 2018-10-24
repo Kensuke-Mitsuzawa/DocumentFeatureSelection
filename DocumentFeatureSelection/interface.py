@@ -125,7 +125,7 @@ def run_feature_selection(input_dict:AvailableInputTypes,
         if len(input_dict.keys()) >= 3:
             raise KeyError('input_dict must not have more than 3 keys if you would like to use BNS.')
 
-        matrix_data_object = data_converter.DataConverter().convert_multi_docs2term_frequency_matrix(
+        matrix_data_object = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=input_dict,
             n_jobs=n_jobs,
             is_use_cache=is_use_cache,
