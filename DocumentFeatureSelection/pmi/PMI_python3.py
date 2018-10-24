@@ -75,7 +75,8 @@ class PMI(object):
     def __init__(self):
         pass
 
-    def fit_transform(self, X:Union[csr_matrix, memmap],
+    def fit_transform(self,
+                      X: Union[csr_matrix, memmap],
                       n_docs_distribution,
                       n_jobs=1,
                       verbose=False,
