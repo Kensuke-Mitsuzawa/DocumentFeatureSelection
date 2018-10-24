@@ -120,7 +120,37 @@ In this case, you take following choice
 * You install `numpy` and `scipy` manually
 * You use `anaconda` python distribution. Please visit [their site](https://www.continuum.io/downloads).
 
-# Examples
+# Example
+
+```python
+input_dict = {
+    "label_a": [
+        ["I", "aa", "aa", "aa", "aa", "aa"],
+        ["bb", "aa", "aa", "aa", "aa", "aa"],
+        ["I", "aa", "hero", "some", "ok", "aa"]
+    ],
+    "label_b": [
+        ["bb", "bb", "bb"],
+        ["bb", "bb", "bb"],
+        ["hero", "ok", "bb"],
+        ["hero", "cc", "bb"],
+    ],
+    "label_c": [
+        ["cc", "cc", "cc"],
+        ["cc", "cc", "bb"],
+        ["xx", "xx", "cc"],
+        ["aa", "xx", "cc"],
+    ]
+}
+
+from DocumentFeatureSelection import interface
+interface.run_feature_selection(input_dict, method='pmi', use_cython=True).convert_score_matrix2score_record()
+```
+Then, you get the result
+
+```python
+[{'score': 0.14976146817207336, 'label': 'label_c', 'feature': 'bb', 'frequency': 1.0}, ...]
+```
 
 See scripts in `examples/`
 
