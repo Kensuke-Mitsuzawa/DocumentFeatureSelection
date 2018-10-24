@@ -124,6 +124,18 @@ In this case, you take following choice
 
 See scripts in `examples/`
 
+# For developers
+
+You could set up dev environment with docker-compose.
+
+This command runs test with the docker container.
+
+```bash
+$ cd tests/
+$ docker-compose build
+$ docker-compose up
+```
+
 # WebApi & Docker
 
 This system has web-api with `Flask`.

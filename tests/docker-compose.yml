@@ -1,0 +1,13 @@
+# 開発/test環境としてまとめてdocker環境を整えるためのcompose
+version: '3'
+services:
+  dev_env:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/codes/
+    working_dir: /codes
+    command: python setup.py test
+    stdin_open: true
+    tty: true
