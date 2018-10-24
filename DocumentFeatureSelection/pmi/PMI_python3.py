@@ -6,16 +6,13 @@ from __future__ import division
 from scipy.sparse import csr_matrix
 from numpy import memmap
 from typing import Union
-from DocumentFeatureSelection import init_logger
-from logging import getLogger, StreamHandler
+from DocumentFeatureSelection.init_logger import logger
 
 import logging
 import joblib
 import math
 import numpy
 
-logger = getLogger(init_logger.LOGGER_NAME)
-logger = init_logger.init_logger(logger)
 __author__ = 'kensuke-mi'
 
 
@@ -23,11 +20,12 @@ __author__ = 'kensuke-mi'
 # http://sucrose.hatenablog.com/entry/2014/12/02/235959
 
 
-def pmi(X:Union[csr_matrix, memmap],
-        n_docs_distribution:numpy.ndarray,
-        n_total_doc:int,
-        feature_index:int,
-        sample_index:int, verbose=False):
+def pmi(X: Union[csr_matrix, memmap],
+        n_docs_distribution: numpy.ndarray,
+        n_total_doc: int,
+        feature_index: int,
+        sample_index: int,
+        verbose=False):
     """get PMI score for given feature & sample index
 
     :param X:

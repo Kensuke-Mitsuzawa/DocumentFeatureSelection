@@ -5,16 +5,14 @@ from __future__ import unicode_literals
 from __future__ import division
 from DocumentFeatureSelection.common import utils, func_data_converter
 from DocumentFeatureSelection.models import DataCsrMatrix, AvailableInputTypes, PersistentDict
-from DocumentFeatureSelection import init_logger
+from DocumentFeatureSelection.init_logger import logger
 from sqlitedict import SqliteDict
-import logging
 import sys
 import numpy
 import tempfile
 import json
 from typing import Dict, List, Tuple, Any, Union
 python_version = sys.version_info
-logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
 __author__ = 'kensuke-mi'
 

@@ -6,10 +6,10 @@ __author__ = 'kensuke-mi'
 __version__ = '1.5'
 
 import sys
-print('python version {}'.format(sys.version_info))
-import pip
+import subprocess
 from setuptools import setup, find_packages
 from distutils.extension import Extension
+print('python version {}'.format(sys.version_info))
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -37,6 +37,31 @@ else:
         Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.c" ]),
         Extension("DocumentFeatureSelection.bns.bns_cython", [ "DocumentFeatureSelection/bns/bns_cython.c" ],)
     ]
+
+# --------------------------------------------------------------------------------------------------------
+# try to install numpy automatically because sklearn requires the status where numpy is already installed
+try:
+    import numpy
+except ImportError:
+    use_numpy_include_dirs = False
+    try:
+        subprocess.check_call(["python", '-m', 'pip', 'install', 'numpy'])
+        import numpy
+    except Exception as e:
+        raise Exception('We failed to install numpy automatically. Try installing numpy manually or Try anaconda distribution.')
+
+# --------------------------------------------------------------------------------------------------------
+# try to install scipy automatically because sklearn requires the status where scipy is already installed
+try:
+    import scipy
+except ImportError:
+    use_numpy_include_dirs = False
+    try:
+        subprocess.check_call(["python", '-m', 'pip', 'install', 'scipy'])
+        import scipy
+    except Exception as e:
+        raise Exception('We failed to install scipy automatically. Try installing scipy manually or Try anaconda distribution.')
+# --------------------------------------------------------------------------------------------------------
 
 python_version = sys.version_info
 
@@ -84,5 +109,5 @@ setup(
     classifiers=[],
     cmdclass=cmdclass,
     ext_modules=ext_modules,
-    include_dirs = [numpy.get_include()]
+    include_dirs=[numpy.get_include()]
 )

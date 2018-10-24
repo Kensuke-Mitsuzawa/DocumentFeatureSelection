@@ -5,11 +5,10 @@ from DocumentFeatureSelection.soa.soa_python3 import SOA
 from DocumentFeatureSelection.pmi.PMI_python3 import PMI
 from DocumentFeatureSelection.tf_idf.tf_idf import TFIDF
 from DocumentFeatureSelection.bns.bns_python3 import BNS
-from DocumentFeatureSelection import init_logger
+from DocumentFeatureSelection.init_logger import logger
 from typing import Dict
 from scipy.sparse.csr import csr_matrix
-import logging
-logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
+import shutil
 METHOD_NAMES = ['soa', 'pmi', 'tf_idf', 'bns']
 N_FEATURE_SWITCH_STRATEGY = 1000000
 
@@ -49,6 +48,9 @@ def run_feature_selection(input_dict: AvailableInputTypes,
     """
     if method not in METHOD_NAMES:
         raise Exception('method name must be either of {}. Yours: {}'.format(METHOD_NAMES, method))
+
+    if is_use_cache or is_use_memmap:
+        logger.debug("Temporary files are created under {}".format(path_working_dir))
 
     if method == 'tf_idf':
         """You get scored-matrix with term-frequency.
@@ -151,6 +153,12 @@ def run_feature_selection(input_dict: AvailableInputTypes,
     else:
         raise Exception()
     logger.info('Done computation.')
+
+    # delete tmp file directory
+    if is_use_cache or is_use_memmap:
+        logger.debug("Delete temporary files {}".format(path_working_dir))
+        shutil.rmtree(path_working_dir)
+
     return ScoredResultObject(
         scored_matrix=scored_sparse_matrix,
         label2id_dict=matrix_data_object.label2id_dict,

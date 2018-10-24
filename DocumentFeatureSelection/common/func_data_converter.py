@@ -1,15 +1,12 @@
 from collections import Counter
-from DocumentFeatureSelection.models import SetDocumentInformation, AvailableInputTypes, PersistentDict
-from DocumentFeatureSelection import init_logger
+from DocumentFeatureSelection.models import SetDocumentInformation, AvailableInputTypes
 from DocumentFeatureSelection.common.utils import init_cache_object
 from sklearn.feature_extraction import DictVectorizer
 from typing import Dict, List, Tuple, Any, Union
 from sqlitedict import SqliteDict
-import logging
 import joblib
 import itertools
 import tempfile
-logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 N_FEATURE_SWITCH_STRATEGY = 1000000
 
 

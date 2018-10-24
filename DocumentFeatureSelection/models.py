@@ -1,16 +1,12 @@
 from typing import Dict, List, Tuple, Union, Any, TypeVar
 from scipy.sparse.csr import csr_matrix
-from numpy.core.multiarray import array, ndarray
 from numpy import memmap
 from sqlitedict import SqliteDict
 from tempfile import mkdtemp
-from DocumentFeatureSelection import init_logger
+from DocumentFeatureSelection.init_logger import logger
 from numpy import ndarray, int32, int64
-import typing
 import pickle, json, csv, os, shutil
 import logging
-import collections
-logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
 
 # this class is from https://code.activestate.com/recipes/576642/
@@ -425,7 +421,6 @@ class ScoredResultObject(object):
             return SqliteDict(os.path.join(path_cache_file, file_name), autocommit=True)
         else:
             raise Exception('No such cache_backend option named {}'.format(cache_backend))
-
 
 
 FeatureType = TypeVar('T', str, Tuple[Any])

@@ -1,14 +1,11 @@
 from scipy.sparse import csr_matrix
 from numpy import memmap
 from typing import Union
-from logging import getLogger
-from DocumentFeatureSelection import init_logger
+from DocumentFeatureSelection.init_logger import logger
 import logging
 import joblib
 import math
 import numpy
-logger = getLogger(init_logger.LOGGER_NAME)
-logger = init_logger.init_logger(logger)
 
 __author__ = 'kensuke-mi'
 

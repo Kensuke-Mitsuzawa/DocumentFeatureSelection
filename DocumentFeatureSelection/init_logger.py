@@ -1,10 +1,6 @@
-LOGGER_NAME = 'DocumentFeatureSelection'
-
 import logging
-import os
 import sys
-from logging import getLogger, Formatter, Logger, StreamHandler
-from logging.handlers import SMTPHandler, RotatingFileHandler, TimedRotatingFileHandler
+from logging import Formatter, StreamHandler
 
 # Formatter
 custmoFormatter = Formatter(
@@ -12,18 +8,11 @@ custmoFormatter = Formatter(
     datefmt='Y/%m/%d %H:%M:%S'
 )
 
-# StreamHandler
-STREAM_LEVEL = logging.DEBUG
-STREAM_FORMATTER = custmoFormatter
-STREAM = sys.stderr
+handler = logging.StreamHandler(sys.stderr)
+handler.setFormatter(custmoFormatter)
 
-st_handler = StreamHandler(stream=STREAM)
-st_handler.setLevel(STREAM_LEVEL)
-st_handler.setFormatter(STREAM_FORMATTER)
-
-
-def init_logger(logger:logging.Logger)->logging.Logger:
-    logger.addHandler(st_handler)
-    logger.propagate = False
-
-    return logger
+LOGGER_NAME = 'DocumentFeatureSelection'
+logger = logging.getLogger(LOGGER_NAME)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
+logger.propagate = False

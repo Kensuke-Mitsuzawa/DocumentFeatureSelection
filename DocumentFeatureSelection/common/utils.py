@@ -5,15 +5,12 @@ from __future__ import unicode_literals
 from __future__ import division
 from scipy.sparse.csr import csr_matrix
 from typing import Union
-from DocumentFeatureSelection import init_logger
 from DocumentFeatureSelection import models
 import sqlitedict
-import logging
 import sys
 import tempfile
 import os
 python_version = sys.version_info
-logger = init_logger.init_logger(logging.getLogger(init_logger.LOGGER_NAME))
 
 __author__ = 'kensuke-mi'
 
