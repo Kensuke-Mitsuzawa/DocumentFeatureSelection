@@ -3,7 +3,7 @@
 """
 
 __author__ = 'kensuke-mi'
-__version__ = '1.4.1'
+__version__ = '1.5'
 
 import sys
 print('python version {}'.format(sys.version_info))
@@ -37,30 +37,6 @@ else:
         Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.c" ]),
         Extension("DocumentFeatureSelection.bns.bns_cython", [ "DocumentFeatureSelection/bns/bns_cython.c" ],)
     ]
-
-# --------------------------------------------------------------------------------------------------------
-# try to install numpy automatically because sklearn requires the status where numpy is already installed
-try:
-    import numpy
-except ImportError:
-    use_numpy_include_dirs = False
-    try:
-        pip.main(['install', 'numpy'])
-        import numpy
-    except:
-        raise Exception('We failed to install numpy automatically. Try installing numpy manually or Try anaconda distribution.')
-# --------------------------------------------------------------------------------------------------------
-# try to install scipy automatically because sklearn requires the status where scipy is already installed
-try:
-    import scipy
-except ImportError:
-    use_numpy_include_dirs = False
-    try:
-        pip.main(['install', 'scipy'])
-        import scipy
-    except:
-        raise Exception('We failed to install scipy automatically. Try installing scipy manually or Try anaconda distribution.')
-# --------------------------------------------------------------------------------------------------------
 
 python_version = sys.version_info
 
