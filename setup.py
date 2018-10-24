@@ -15,18 +15,13 @@ print('python version {}'.format(python_version))
 
 # --------------------------------------------------------------------------------------------------------
 # Flags to compile Cython code or use already compiled code
-
 try:
-    from Cython.Build import cythonize
-    from Cython.Distutils import build_ext
+    import Cython
 except ImportError:
-    use_cython = False
-else:
-    use_cython = True
+    subprocess.check_call(["python", '-m', 'pip', 'install', 'cython'])
+    import Cython
 
-print("Is Cython: " + str(use_cython))
-
-if sys.version_info >= (3, 7) and use_cython:
+if sys.version_info >= (3, 7):
     # if python >= 3.7, Cython must regenerate C++ code again.
     import os
     if os.path.exists('DocumentFeatureSelection/pmi/pmi_cython.c'):
@@ -35,37 +30,20 @@ if sys.version_info >= (3, 7) and use_cython:
         os.remove('DocumentFeatureSelection/bns/bns_cython.c')
     if os.path.exists('DocumentFeatureSelection/soa/soa_cython.c'):
         os.remove('DocumentFeatureSelection/soa/soa_cython.c')
-    # typing must be installed
+    # if python >= 3.7, typing should be installed again.
     subprocess.check_call(["python", '-m', 'pip', 'install', 'typing'])
-elif sys.version_info >= (3, 7) and use_cython is False:
-    # typing must be installed
-    subprocess.check_call(["python", '-m', 'pip', 'install', 'typing'])
-    try:
-        import Cython
-    except ImportError:
-        try:
-            subprocess.check_call(["python", '-m', 'pip', 'install', 'cython'])
-            import Cython
-        except Exception as e:
-            raise Exception(e.__str__() + 'We failed to install Cython automatically. \
-            Try installing Cython manually or Try anaconda distribution.')
-
 
 cmdclass = {}
 ext_modules = []
-if use_cython:
-    ext_modules += [
-        Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.pyx" ],),
-        Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.pyx" ],),
-        Extension("DocumentFeatureSelection.bns.bns_cython", [ "DocumentFeatureSelection/bns/bns_cython.pyx" ],)
-    ]
-    cmdclass.update({'build_ext': build_ext})
-else:
-    ext_modules += [
-        Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.c" ]),
-        Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.c" ]),
-        Extension("DocumentFeatureSelection.bns.bns_cython", [ "DocumentFeatureSelection/bns/bns_cython.c" ],)
-    ]
+from Cython.Distutils import build_ext
+
+ext_modules += [
+    Extension("DocumentFeatureSelection.pmi.pmi_cython", [ "DocumentFeatureSelection/pmi/pmi_cython.pyx" ],),
+    Extension("DocumentFeatureSelection.soa.soa_cython", [ "DocumentFeatureSelection/soa/soa_cython.pyx" ],),
+    Extension("DocumentFeatureSelection.bns.bns_cython", [ "DocumentFeatureSelection/bns/bns_cython.pyx" ],)
+]
+cmdclass.update({'build_ext': build_ext})
+
 
 # --------------------------------------------------------------------------------------------------------
 # try to install numpy automatically because sklearn requires the status where numpy is already installed

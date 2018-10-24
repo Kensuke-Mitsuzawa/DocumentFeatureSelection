@@ -39,5 +39,7 @@ scipy \
 numpy
 
 RUN pip install more_itertools joblib nltk pypandoc sqlitedict nose
+RUN conda create -y -n p36 python=3.6
+RUN conda create -y -n p37 python=3.7
 
 CMD ["/bin/bash"]

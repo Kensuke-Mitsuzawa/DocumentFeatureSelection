@@ -8,6 +8,22 @@ services:
     volumes:
       - ..:/codes/
     working_dir: /codes
-    command: python setup.py test
+    stdin_open: true
+    tty: true
+  test_env:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/codes/
+    working_dir: /codes
+    command: >
+      bash -c "echo 'Python3.6 Test' &&
+      source activate p36 &&
+      python setup.py test &&
+      deactivate &&
+      echo 'Python3.7 Test' &&
+      source activate p37 &&
+      python setup.py test"
     stdin_open: true
     tty: true
