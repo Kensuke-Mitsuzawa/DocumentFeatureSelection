@@ -24,7 +24,7 @@ before_install:
   - export CXX="g++-5"
   - export CFLAGS=-std=c++11
   - export CXXFLAGS=-std=c++11
-  - pip install numpy scipy scikit-learn cython
+  - pip install numpy scipy scikit-learn cython sqlitedict
 install:
   - python --version
   - python setup.py build install
