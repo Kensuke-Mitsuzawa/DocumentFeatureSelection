@@ -47,14 +47,15 @@ class TestSoaPython3(unittest.TestCase):
             scored_matrix=scored_matrix_term_freq,
             label2id_dict=label2id_dict,
             feature2id_dict=vocabulary
-        ).ScoreMatrix2ScoreDictionary()
+        ).convert_score_matrix2score_record()
+        self.assertTrue(isinstance(soa_scores_term_freq, list))
 
-        import pprint
-        print('term freq based soa')
-        pprint.pprint(soa_scores_term_freq)
+        #import pprint
+        #print('term freq based soa')
+        #pprint.pprint(soa_scores_term_freq)
 
     def test_soa_doc_freq(self):
-        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=self.input_dict,
             n_jobs=5
         )
@@ -74,11 +75,13 @@ class TestSoaPython3(unittest.TestCase):
             scored_matrix=scored_matrix_doc_freq,
             label2id_dict=label2id_dict,
             feature2id_dict=vocabulary
-        ).ScoreMatrix2ScoreDictionary()
+        ).convert_score_matrix2score_record()
+        self.assertTrue(isinstance(soa_scores_doc_freq, list))
 
-        import pprint
-        print('doc freq based soa')
-        pprint.pprint(soa_scores_doc_freq)
+        #import pprint
+        #print('doc freq based soa')
+        #pprint.pprint(soa_scores_doc_freq)
+
 
 if __name__ == '__main__':
     unittest.main()

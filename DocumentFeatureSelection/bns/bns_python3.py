@@ -1,16 +1,12 @@
 from scipy.sparse import csr_matrix
 from sklearn.base import TransformerMixin
 from scipy.stats import norm
-from logging import getLogger, StreamHandler
 from numpy import ndarray, memmap
 from typing import Union
-from DocumentFeatureSelection import init_logger
+from DocumentFeatureSelection.init_logger import logger
 import numpy as np
 import joblib
 import logging
-
-logger = getLogger(init_logger.LOGGER_NAME)
-logger = init_logger.init_logger(logger)
 
 
 def bns(X:Union[memmap, csr_matrix],

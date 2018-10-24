@@ -120,108 +120,49 @@ In this case, you take following choice
 * You install `numpy` and `scipy` manually
 * You use `anaconda` python distribution. Please visit [their site](https://www.continuum.io/downloads).
 
-# Examples
+# Example
+
+```python
+input_dict = {
+    "label_a": [
+        ["I", "aa", "aa", "aa", "aa", "aa"],
+        ["bb", "aa", "aa", "aa", "aa", "aa"],
+        ["I", "aa", "hero", "some", "ok", "aa"]
+    ],
+    "label_b": [
+        ["bb", "bb", "bb"],
+        ["bb", "bb", "bb"],
+        ["hero", "ok", "bb"],
+        ["hero", "cc", "bb"],
+    ],
+    "label_c": [
+        ["cc", "cc", "cc"],
+        ["cc", "cc", "bb"],
+        ["xx", "xx", "cc"],
+        ["aa", "xx", "cc"],
+    ]
+}
+
+from DocumentFeatureSelection import interface
+interface.run_feature_selection(input_dict, method='pmi', use_cython=True).convert_score_matrix2score_record()
+```
+Then, you get the result
+
+```python
+[{'score': 0.14976146817207336, 'label': 'label_c', 'feature': 'bb', 'frequency': 1.0}, ...]
+```
 
 See scripts in `examples/`
 
-# WebApi & Docker
+# For developers
 
-This system has web-api with `Flask`.
+You could set up dev environment with docker-compose.
 
-You're able to use it with Docker.
+This command runs test with the docker container.
 
-If you'd like to use it, first you `git clone` from repository.
-
-## Docker
-
-### Build docker image
-
-```
-docker build -t document-feature-selection-api ./
+```bash
+$ cd tests/
+$ docker-compose build
+$ docker-compose up
 ```
 
-### Run docker container 
-
-```
-docker run --name document-feature-selection-api-container -d -p 5000:5000 document-feature-selection-api
-```
-
-### To use api
-
-You're able to see documentation of web-app with `/`
- 
-For example, if your local machine is docker host, you can get access there with
-
-```
-http://localhost:5000
-```
-
-
-# Change log
-
-For your reference I checked performance under following environment,
- 
-- MacBookPro (late 2015) 3.1 GHz Intel Core i7, 16 GB 1867 MHz DDR3
-- input data has 98,600 feature dimensions.
-
-
-## 0.6 2016/04/02
-
-supports PMI and TF-IDF under Python3.x
-
-## 0.7 2016/04/03
-
-Added SOA under Python3.x
-
-## 0.8 2016/04/03
-
-Added BNS under Python3.x
-
-## 0.9 2016/04/10
-
-Removed a bug when calling n_gram method of DataConverter
-
-## 1.0 2016/08/22
-
-* Refactored some modules. (I changed some module names. Sorry if you have problems...) 
-* Added interface script
-
-## 1.1 2016/9/16
-
-* Resolved bottleneck point in pre-processing
-* Fixed a bug which n_jobs parameter does not work in interface
-* PMI takes around 6 minutes (with both of multiprocessing and multithreading)
-
-## 1.2 2016/9/16
-
-* A bug in calculating TF-IDF score, this bug was resolved.
-
-## 1.3 2016/9/28
-
-* Resolved bottleneck poins in pre-processing
-    * Introduced dict-vectorising in ScikitLearn
-    * Introduced Cython in calculating PMI \& SOA. You can call them with `use_cython=True` flag. See `examples/basic_example.py`
-* Performance
-    * Cython PMI takes 11.87 sec.
-    * Python multiprocessing PMI takes 513.541 sec. (8.55 min.)
-    
-## 1.3.2 2016/11/29
-
-* You can put persisted-dict-object on disk-drive instead of dict-object on memory.
-    * You can put huge dict object as data-source of `interface.run_feature_selection()`
-    * See example `examples/huge_data_example.py`
-    
-    
-## 1.3.3 2016/11/30
-
-* It introduced file-cache for keeping huge objects during computation.
-
-
-## 1.3.4 2017/1/27
-
-* It introduced cython computation for BNS.
-* I cleaned up misery dependencies between modules.
-
-## 1.3.5 2017/2/25
-
-* The system is with Docker + Web-app

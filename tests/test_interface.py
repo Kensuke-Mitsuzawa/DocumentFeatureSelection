@@ -6,6 +6,7 @@ from sqlitedict import SqliteDict
 import os
 import numpy
 
+
 class TestInterface(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -83,6 +84,7 @@ class TestInterface(unittest.TestCase):
                                                          scored_result_dict.scored_matrix.toarray())
                         numpy.testing.assert_array_equal(scored_result_sqlite3_persisted.scored_matrix.toarray(),
                                                          scored_result_dict.scored_matrix.toarray())
+
 
 if __name__ == '__main__':
     unittest.main()

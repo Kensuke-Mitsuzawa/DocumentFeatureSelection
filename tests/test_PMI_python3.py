@@ -28,7 +28,7 @@ class TestPmiPython3(unittest.TestCase):
             ]
         }
 
-        data_csr_matrix = data_converter.DataConverter().labeledMultiDocs2DocFreqMatrix(
+        data_csr_matrix = data_converter.DataConverter().convert_multi_docs2document_frequency_matrix(
             labeled_documents=input_dict,
             n_jobs=5
         )
@@ -70,12 +70,9 @@ class TestPmiPython3(unittest.TestCase):
             scored_matrix=scored_matrix,
             label2id_dict=self.label2id_dict,
             feature2id_dict=self.vocabulary
-        ).ScoreMatrix2ScoreDictionary(
-            outformat='items')
+        ).convert_score_matrix2score_record(outformat='items')
+        self.assertTrue(isinstance(pmi_scored_dict, list))
 
-        assert isinstance(pmi_scored_dict, list)
-        import pprint
-        pprint.pprint(pmi_scored_dict)
 
 if __name__ == '__main__':
     unittest.main()

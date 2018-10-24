@@ -1,6 +1,7 @@
 language: python
 python:
-  - 3.5
+  - "3.5"
+  - "3.6"
 addons:
   apt:
     packages:
@@ -22,10 +23,10 @@ before_install:
   - export CXX="g++-5"
   - export CFLAGS=-std=c++11
   - export CXXFLAGS=-std=c++11
-  - pip install numpy scipy scikit-learn cython
+  - pip install numpy scipy scikit-learn cython sqlitedict
 install:
   - python --version
-  - python setup.py build install
+  - python setup.py install
   - pip install coveralls coverage nose
 script:
   - coverage run --source=DocumentFeatureSelection setup.py test

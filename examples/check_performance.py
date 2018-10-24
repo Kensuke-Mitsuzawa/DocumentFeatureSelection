@@ -1,16 +1,18 @@
+from DocumentFeatureSelection.init_logger import logger
 from DocumentFeatureSelection import interface
-import nltk
 import logging
 import time
-try:
-    import line_profiler
-except:
-    raise ImportError('Install line_profiler first!')
-logger = logging.getLogger('sample usage')
-logger.level = logging.DEBUG
+import nltk
+
+nltk.download('abc')
+nltk.download('genesis')
+nltk.download('webtext')
+nltk.download('gutenberg')
+nltk.download('punkt')
+
+"""This script shows the difference of computing speed between cython and multi-processing"""
 
 
-#@profile
 def pmi_with_parallel(input_corpus):
     logging.debug(msg='With multiprocessing backend')
     start = time.time()
@@ -18,24 +20,9 @@ def pmi_with_parallel(input_corpus):
         input_dict=input_corpus,
         method='pmi',
         n_jobs=-1,
-        joblib_backend='multiprocessing'
     )
     elapsed_time = time.time() - start
-    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
-
-
-#@profile
-def pmi_with_threading(input_corpus):
-    start = time.time()
-    logging.debug(msg='With threading backend')
-    scored_matrix_obj = interface.run_feature_selection(
-        input_dict=input_corpus,
-        method='pmi',
-        n_jobs=-1,
-        joblib_backend='threading'
-    )
-    elapsed_time = time.time() - start
-    print ("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
+    logger.info("elapsed_time with multiprocess:{} [sec]".format(elapsed_time))
 
 
 def pmi_with_cython(input_corpus):
@@ -44,11 +31,11 @@ def pmi_with_cython(input_corpus):
     scored_matrix_obj = interface.run_feature_selection(
         input_dict=input_corpus,
         method='pmi',
-        n_jobs=-1,
         use_cython=True
     )
     elapsed_time = time.time() - start
-    print ("elapsed_time with cython:{} [sec]".format(elapsed_time))
+    logger.info("elapsed_time with cython:{} [sec]".format(elapsed_time))
+
 
 from nltk.corpus import gutenberg
 from nltk.corpus import webtext
@@ -69,4 +56,3 @@ input_corpus = {
 
 pmi_with_cython(input_corpus)
 pmi_with_parallel(input_corpus)
-#pmi_with_threading(input_corpus)
