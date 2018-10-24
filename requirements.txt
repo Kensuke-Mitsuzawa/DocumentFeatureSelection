@@ -1,4 +1,0 @@
-nose
-tox
-joblib
-typing
